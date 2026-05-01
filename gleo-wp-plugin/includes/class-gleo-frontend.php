@@ -1123,6 +1123,69 @@ main :is(.gleo-stats-callout, .gleo-expert-quote, .gleo-table-block, .gleo-faq-w
 	}
 
 	/**
+	 * FAQ Q&A pairs from real post sentences (avoids one-size-fits-all copy).
+	 *
+	 * @param WP_Post $post Post being edited.
+	 * @return array<int, array{q: string, a: string}>
+	 */
+	private function gleo_build_faq_pairs_from_post_sentences( WP_Post $post ) {
+		$plain = wp_strip_all_tags( $post->post_content );
+		$plain = preg_replace( '/\s+/u', ' ', $plain );
+		$plain = trim( $plain );
+		$sents = preg_split( '/(?<=[.!?])\s+/u', $plain, -1, PREG_SPLIT_NO_EMPTY );
+		$pairs = array();
+		foreach ( $sents as $s ) {
+			$s = trim( $s );
+			if ( strlen( $s ) < 45 ) {
+				continue;
+			}
+			if ( count( $pairs ) >= 4 ) {
+				break;
+			}
+			$clip = wp_html_excerpt( $s, 72, '…' );
+			$n    = count( $pairs );
+			if ( 0 === $n ) {
+				$q = sprintf(
+					/* translators: %s: short excerpt from the article */
+					__( 'What does this article explain about “%s”?', 'gleo' ),
+					$clip
+				);
+			} elseif ( 1 === $n ) {
+				$q = sprintf(
+					/* translators: %s: short excerpt from the article */
+					__( 'What else is covered regarding “%s”?', 'gleo' ),
+					$clip
+				);
+			} else {
+				$q = sprintf(
+					/* translators: %s: short excerpt from the article */
+					__( 'More detail on “%s”?', 'gleo' ),
+					$clip
+				);
+			}
+			$pairs[] = array(
+				'q' => $q,
+				'a' => $s,
+			);
+		}
+		if ( empty( $pairs ) ) {
+			$topic = wp_strip_all_tags( $post->post_title );
+			if ( '' === $topic ) {
+				$topic = __( 'this topic', 'gleo' );
+			}
+			$pairs[] = array(
+				'q' => sprintf(
+					/* translators: %s: post title */
+					__( 'What does “%s” cover here?', 'gleo' ),
+					$topic
+				),
+				'a' => wp_html_excerpt( $plain, 360, '…' ),
+			);
+		}
+		return $pairs;
+	}
+
+	/**
 	 * Spread blocks across three columns when the theme left the outer columns empty and put everything in the middle.
 	 *
 	 * @param string $content Post content (block markup).
@@ -2159,25 +2222,9 @@ main :is(.gleo-stats-callout, .gleo-expert-quote, .gleo-table-block, .gleo-faq-w
 					}
 				}
 
-				// Last resort: topic-grounded defaults when scan assets are missing or not parseable (keeps "Add FAQ" from failing silently).
+				// Last resort: derive Q&A from real sentences in the post (not generic site-wide blurbs).
 				if ( empty( $pairs ) ) {
-					$topic = wp_strip_all_tags( $post->post_title );
-					if ( '' === $topic ) {
-						$topic = __( 'this topic', 'gleo' );
-					}
-					$pairs   = array();
-					$pairs[] = array(
-						'q' => sprintf(
-							/* translators: %s: post title */
-							__( 'What should I know about %s?', 'gleo' ),
-							$topic
-						),
-						'a' => __( 'The sections above walk through the details—skim the headings to find what matches your question.', 'gleo' ),
-					);
-					$pairs[] = array(
-						'q' => __( 'Where should I start?', 'gleo' ),
-						'a' => __( 'Read the opening, then follow the headings to the part that fits your situation.', 'gleo' ),
-					);
+					$pairs = $this->gleo_build_faq_pairs_from_post_sentences( $post );
 				}
 
 				// Build accordion HTML

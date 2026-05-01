@@ -42,16 +42,50 @@ function escapeHtmlPlain(s) {
     .replace(/"/g, '&quot;');
 }
 
-/** When Gemini emits banned filler or empty strings, keep other assets instead of dropping the whole bundle. */
-function buildFallbackFaqHtml(title) {
-  const t = escapeHtmlPlain(String(title || 'this topic').slice(0, 160));
-  return (
-    `<h2>Quick answers</h2>` +
-    `<h3>What does this article cover?</h3>` +
-    `<p>It explains ${t} in practical terms—use the headings above to jump to any section.</p>` +
-    `<h3>How should I use this page?</h3>` +
-    `<p>Use it as a reference alongside your own requirements and any rules that apply to you.</p>`
-  );
+/** FAQ HTML derived from the page excerpt so Q&A are specific to this article (not template blurbs). */
+function buildFaqHtmlFromExcerpt(title, excerpt) {
+  const text = String(excerpt || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const tit = escapeHtmlPlain(String(title || 'this article').slice(0, 120));
+  const sentences = text
+    .split(/(?<=[.!?])\s+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length >= 38)
+    .slice(0, 3);
+  let html = '<h2>Frequently asked questions</h2>';
+  if (sentences.length === 0) {
+    const body = escapeHtmlPlain(text.slice(0, 420) || tit);
+    html += `<h3>What does “${tit}” cover in this piece?</h3><p>${body}</p>`;
+    return html;
+  }
+  const qTemplates = [
+    (c) => `What does this article explain about “${c}”?`,
+    (c) => `What else is covered regarding “${c}”?`,
+    (c) => `More detail on “${c}”?`,
+  ];
+  sentences.forEach((s, i) => {
+    const ans = escapeHtmlPlain(s.slice(0, 420));
+    const clip = escapeHtmlPlain(s.slice(0, 68).trim() + (s.length > 68 ? '…' : ''));
+    const q = qTemplates[Math.min(i, 2)](clip);
+    html += `<h3>${q}</h3><p>${ans}</p>`;
+  });
+  return html;
+}
+
+/** Detects our old one-size-fits-all FAQ blurbs (or close variants) so we can replace with excerpt-based HTML. */
+function looksGenericBoilerplateFaq(html) {
+  const t = String(html || '').toLowerCase();
+  if (t.includes('use the headings above') || t.includes('alongside your own requirements')) {
+    return true;
+  }
+  if (t.includes('how should i use this page') && t.includes('practical terms')) {
+    return true;
+  }
+  if (/quick answers<\/h2>/i.test(html) && t.includes('what does this article cover')) {
+    return true;
+  }
+  return false;
 }
 
 /** Marketing-style matrix filler the model must not use in comparison tables. */
@@ -101,7 +135,7 @@ function contextualAssetFallback(key, title, excerpt = '') {
   const t = escapeHtmlPlain(String(title || '').slice(0, 120));
   switch (key) {
     case 'faq_html':
-      return buildFallbackFaqHtml(title);
+      return buildFaqHtmlFromExcerpt(title, excerpt);
     case 'authority_html':
       return '<p></p>';
     case 'data_table_html':
@@ -128,6 +162,9 @@ function sanitizeContextualAssets(assets, title = '', excerpt = '') {
     const generic = !missing && looksGenericCopy(raw);
     let bad = missing || generic;
     if (key === 'data_table_html' && !missing && looksGenericTemplateTable(raw)) {
+      bad = true;
+    }
+    if (key === 'faq_html' && !missing && looksGenericBoilerplateFaq(raw)) {
       bad = true;
     }
     if (bad) {
@@ -258,7 +295,7 @@ async function generateContextualAssets(title, content) {
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: [
-        { role: "user", parts: [{ text: `Article title: ${title}\nArticle excerpt (from the page): ${plainText}\n\nWrite HTML snippets this site could paste into WordPress. Stay tightly on the article's real subject and facts from the excerpt. Do not use meta filler, SEO clichés, or template phrases (avoid wording like: "key details", "what you need to know", "deep dive", "key takeaways", "important considerations", "really", duplicated phrases, or headings that sound like a content mill).\n\nNever output instructional placeholder text about statistics (for example do not write "add a verified", "source-backed metric", "figure and source name", or similar editor prompts). For authority_html, either use real numbers clearly grounded in the excerpt or write an empty <p></p>.\n\nNever write marketing slogans or ad copy. Specifically avoid lines like "awaken your senses", "experience the finest", "perfect morning", "crafted with passion", "why choose us", or similar promo language.\n\nFor data_table_html specifically:\n- Every row must quote concrete ideas from the excerpt or restate them in plain words tied to this topic.\n- Forbidden: abstract rows like "Primary Benefit", "Secondary Benefit", "Consideration", "Key advantage related to…", "Additional value point", "Important factor to evaluate", or priority cells that are only "High", "Medium", "Varies", "Impact" columns filled with filler. Use real comparisons (e.g. named options, steps, or facts from the article), not a generic benefits matrix.\n\nFormatting rules:\n- Keep visual hierarchy clean: main section titles are H2; sub-sections inside cards/columns should be H3 or H4 (not H2).\n- Never use inline fixed heights/min-heights/overflow clipping styles.\n- If you output multi-column or multi-card content, keep each column structurally parallel (same type of container, similar heading level + paragraph/list pattern).\n- Ensure link and text colors stay readable on dark backgrounds (high contrast, no dark text on dark backgrounds).\n- Table headers must be concise and prominent.\n\nInclude: (1) a comparison table in <figure class=\"wp-block-table\"><table>...</table></figure>, (2) a short FAQ (one clear H2 title + H3 questions + answers), (3) one extra section (H2 + paragraph) that continues the article substance, (4) a compact Q&A block, (5) one paragraph of plausible, topic-relevant statistics written as normal sentences (no heading).` }] }
+        { role: "user", parts: [{ text: `Article title: ${title}\nArticle excerpt (from the page): ${plainText}\n\nWrite HTML snippets this site could paste into WordPress. Stay tightly on the article's real subject and facts from the excerpt. Do not use meta filler, SEO clichés, or template phrases (avoid wording like: "key details", "what you need to know", "deep dive", "key takeaways", "important considerations", "really", duplicated phrases, or headings that sound like a content mill).\n\nNever output instructional placeholder text about statistics (for example do not write "add a verified", "source-backed metric", "figure and source name", or similar editor prompts). For authority_html, either use real numbers clearly grounded in the excerpt or write an empty <p></p>.\n\nNever write marketing slogans or ad copy. Specifically avoid lines like "awaken your senses", "experience the finest", "perfect morning", "crafted with passion", "why choose us", or similar promo language.\n\nFor data_table_html specifically:\n- Every row must quote concrete ideas from the excerpt or restate them in plain words tied to this topic.\n- Forbidden: abstract rows like "Primary Benefit", "Secondary Benefit", "Consideration", "Key advantage related to…", "Additional value point", "Important factor to evaluate", or priority cells that are only "High", "Medium", "Varies", "Impact" columns filled with filler. Use real comparisons (e.g. named options, steps, or facts from the article), not a generic benefits matrix.\n\nFor faq_html specifically:\n- Each H3 question and its <p> answer must restate real points from the excerpt (names, steps, claims, or facts). Forbidden: filler like "use the headings above", "practical terms", "alongside your own requirements", "How should I use this page?", or generic questions that could apply to any site. Questions should sound like something a reader would ask about THIS article’s topic.\n\nFormatting rules:\n- Keep visual hierarchy clean: main section titles are H2; sub-sections inside cards/columns should be H3 or H4 (not H2).\n- Never use inline fixed heights/min-heights/overflow clipping styles.\n- If you output multi-column or multi-card content, keep each column structurally parallel (same type of container, similar heading level + paragraph/list pattern).\n- Ensure link and text colors stay readable on dark backgrounds (high contrast, no dark text on dark backgrounds).\n- Table headers must be concise and prominent.\n\nInclude: (1) a comparison table in <figure class=\"wp-block-table\"><table>...</table></figure>, (2) a short FAQ (one clear H2 title + H3 questions + answers), (3) one extra section (H2 + paragraph) that continues the article substance, (4) a compact Q&A block, (5) one paragraph of plausible, topic-relevant statistics written as normal sentences (no heading).` }] }
       ],
       config: {
         systemInstruction: "You are an experienced web editor and accessibility-minded frontend writer. Output valid, minimal HTML fragments suitable for WordPress. Use only the supplied title and excerpt; be specific and natural. Never use generic SEO headings, marketing slogans, or repetitive filler. Keep structure balanced, readable, and semantically correct. Return strict JSON only.",
@@ -267,7 +304,7 @@ async function generateContextualAssets(title, content) {
           type: "OBJECT",
           properties: {
             data_table_html: { type: "STRING", description: "Concrete comparison rows grounded in the excerpt (no generic benefit/impact matrix). <figure class=\"wp-block-table\"><table>...</table></figure>." },
-            faq_html: { type: "STRING", description: "FAQ: one concrete H2 title + 2–3 H3 questions with <p> answers; wording must match the article topic." },
+            faq_html: { type: "STRING", description: "H2 + 2–3 H3 FAQs: every answer must paraphrase or quote substance from the excerpt; no template blurbs." },
             depth_html: { type: "STRING", description: "One H2 (specific to the topic, not a generic label) plus one <p> that adds useful detail grounded in the excerpt." },
             qa_html: { type: "STRING", description: "Short Q&A block: natural question heading plus direct answer paragraph about the article's core idea." },
             authority_html: { type: "STRING", description: "Single <p> only: 2–3 real numeric statistics grounded in the excerpt as flowing prose; never instructions to the editor; use <p></p> if no numbers exist in the excerpt." }
