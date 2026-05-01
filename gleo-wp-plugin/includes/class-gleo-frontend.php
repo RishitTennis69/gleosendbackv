@@ -1052,6 +1052,77 @@ main :is(.gleo-stats-callout, .gleo-expert-quote, .gleo-table-block, .gleo-faq-w
 	}
 
 	/**
+	 * Detect generic “benefit / impact” template tables (not grounded in the article).
+	 *
+	 * @param string $html Table or figure HTML.
+	 * @return bool
+	 */
+	private function gleo_data_table_is_placeholder_template( $html ) {
+		if ( ! is_string( $html ) || '' === $html ) {
+			return true;
+		}
+		$t = strtolower( wp_strip_all_tags( $html ) );
+		if ( strpos( $t, 'primary benefit' ) !== false && strpos( $t, 'secondary benefit' ) !== false ) {
+			return true;
+		}
+		$needles = array( 'key advantage related', 'additional value point', 'important factor to evaluate' );
+		$hits    = 0;
+		foreach ( $needles as $n ) {
+			if ( strpos( $t, $n ) !== false ) {
+				$hits++;
+			}
+		}
+		if ( $hits >= 2 ) {
+			return true;
+		}
+		if ( preg_match( '/\bhigh\b.*\bmedium\b.*\bvaries\b/is', $t ) ) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Build a 2-column table from real post sentences (no marketing placeholders).
+	 *
+	 * @param WP_Post $post Post being edited.
+	 * @return string Inner table HTML (thead + tbody only).
+	 */
+	private function gleo_build_data_table_from_post( WP_Post $post ) {
+		$plain = wp_strip_all_tags( $post->post_content );
+		$plain = preg_replace( '/\s+/', ' ', $plain );
+		$plain = trim( $plain );
+		$sents = preg_split( '/(?<=[.!?])\s+/u', $plain, -1, PREG_SPLIT_NO_EMPTY );
+		$rows  = array();
+		foreach ( $sents as $s ) {
+			$s = trim( $s );
+			if ( strlen( $s ) < 35 ) {
+				continue;
+			}
+			if ( count( $rows ) >= 4 ) {
+				break;
+			}
+			$rows[] = $s;
+		}
+		if ( empty( $rows ) ) {
+			$rows[] = __( 'Use the headings above to jump to the section that matches what you need.', 'gleo' );
+		}
+		$h_topic = esc_html__( 'Topic angle', 'gleo' );
+		$h_from   = esc_html__( 'From this article', 'gleo' );
+		$tbody    = '<tbody>';
+		$n        = 1;
+		foreach ( $rows as $sentence ) {
+			$tbody .= '<tr><td>' . esc_html( sprintf(
+				/* translators: %d: row number */
+				__( 'Takeaway %d', 'gleo' ),
+				$n
+			) ) . '</td><td>' . esc_html( wp_html_excerpt( $sentence, 260, '…' ) ) . '</td></tr>';
+			$n++;
+		}
+		$tbody .= '</tbody>';
+		return '<thead><tr><th>' . $h_topic . '</th><th>' . $h_from . '</th></tr></thead>' . $tbody;
+	}
+
+	/**
 	 * Spread blocks across three columns when the theme left the outer columns empty and put everything in the middle.
 	 *
 	 * @param string $content Post content (block markup).
@@ -2131,27 +2202,28 @@ main :is(.gleo-stats-callout, .gleo-expert-quote, .gleo-table-block, .gleo-faq-w
 				break;
 
 			case 'data_tables':
-				if ( ! empty( $contextual_assets['data_table_html'] ) ) {
-					$raw = $contextual_assets['data_table_html'];
+				$raw = ( is_array( $contextual_assets ) && ! empty( $contextual_assets['data_table_html'] ) )
+					? $contextual_assets['data_table_html']
+					: '';
+				if ( $raw !== '' && ! $this->gleo_data_table_is_placeholder_template( $raw ) ) {
 					preg_match( '/<table[^>]*>(.*?)<\/table>/si', $raw, $tm );
 					if ( ! empty( $tm[1] ) ) {
 						$inner_table = $this->annotate_table_with_data_labels( $tm[1] );
-						$table_inner = '<div class="gleo-table-block"><h3>Data Overview</h3>'
+						$table_inner = '<div class="gleo-table-block"><h3>' . esc_html__( 'At a glance', 'gleo' ) . '</h3>'
 							. '<div class="gleo-table-scroll"><table class="gleo-data-table">' . $inner_table . '</table></div></div>';
 					} else {
 						$table_inner = '<div class="gleo-table-block"><div class="gleo-table-scroll">' . wp_kses_post( $raw ) . '</div></div>';
 					}
 				} else {
-					$topic = esc_html( $post->post_title );
-					$rows  = '<thead><tr><th>Feature</th><th>Details</th><th>Impact</th></tr></thead>'
-						. '<tbody>'
-						. '<tr><td>Primary Benefit</td><td>Key advantage related to ' . $topic . '</td><td>High</td></tr>'
-						. '<tr><td>Secondary Benefit</td><td>Additional value point</td><td>Medium</td></tr>'
-						. '<tr><td>Consideration</td><td>Important factor to evaluate</td><td>Varies</td></tr>'
-						. '</tbody>';
-					$rows = $this->annotate_table_with_data_labels( $rows );
+					$topic = esc_html( wp_strip_all_tags( $post->post_title ) );
+					$rows  = $this->gleo_build_data_table_from_post( $post );
+					$rows  = $this->annotate_table_with_data_labels( $rows );
 					$table_inner = '<div class="gleo-table-block">'
-						. '<h3>' . $topic . ' Overview</h3>'
+						. '<h3>' . sprintf(
+							/* translators: %s: post title */
+							esc_html__( '%s — key points', 'gleo' ),
+							$topic
+						) . '</h3>'
 						. '<div class="gleo-table-scroll"><table class="gleo-data-table">'
 						. $rows
 						. '</table></div></div>';

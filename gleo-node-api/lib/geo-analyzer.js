@@ -54,7 +54,50 @@ function buildFallbackFaqHtml(title) {
   );
 }
 
-function contextualAssetFallback(key, title) {
+/** Marketing-style matrix filler the model must not use in comparison tables. */
+function looksGenericTemplateTable(html) {
+  const t = String(html || '').toLowerCase();
+  if (!/<\s*table/i.test(t)) {
+    return false;
+  }
+  if (t.includes('primary benefit') && t.includes('secondary benefit')) {
+    return true;
+  }
+  const needles = ['key advantage related', 'additional value point', 'important factor to evaluate'];
+  let hits = 0;
+  for (const n of needles) {
+    if (t.includes(n)) {
+      hits++;
+    }
+  }
+  if (hits >= 2) {
+    return true;
+  }
+  if (/\bhigh\b[\s\S]{0,120}\bmedium\b[\s\S]{0,120}\bvaries\b/i.test(t)) {
+    return true;
+  }
+  return false;
+}
+
+/** Real sentences from the excerpt — no “Primary Benefit / High” placeholders. */
+function buildDataTableFromExcerpt(title, excerpt) {
+  const text = String(excerpt || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const parts = text
+    .split(/(?<=[.!?])\s+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length >= 30)
+    .slice(0, 4);
+  const rows = parts.length ? parts : [text.slice(0, 400) || 'See the article body for specifics.'];
+  let rowsHtml = '';
+  rows.forEach((s, i) => {
+    rowsHtml += `<tr><td>Takeaway ${i + 1}</td><td>${escapeHtmlPlain(s.slice(0, 280))}</td></tr>`;
+  });
+  return `<figure class="wp-block-table"><table class="gleo-data-table"><thead><tr><th>Topic angle</th><th>From this article</th></tr></thead><tbody>${rowsHtml}</tbody></table></figure>`;
+}
+
+function contextualAssetFallback(key, title, excerpt = '') {
   const t = escapeHtmlPlain(String(title || '').slice(0, 120));
   switch (key) {
     case 'faq_html':
@@ -62,7 +105,10 @@ function contextualAssetFallback(key, title) {
     case 'authority_html':
       return '<p></p>';
     case 'data_table_html':
-      return '<figure class="wp-block-table"><table class="gleo-ctx-fallback"><tbody><tr><td>Topic</td><td>Details in article</td></tr></tbody></table></figure>';
+      if (excerpt && String(excerpt).trim().length > 50) {
+        return buildDataTableFromExcerpt(title, excerpt);
+      }
+      return `<figure class="wp-block-table"><table class="gleo-data-table"><thead><tr><th>Focus</th><th>Summary</th></tr></thead><tbody><tr><td>${t}</td><td>Use the headings above for the full explanation.</td></tr></tbody></table></figure>`;
     case 'depth_html':
       return `<h2>More detail on ${t}</h2><p>Expand on the points above with specifics your readers can act on.</p>`;
     case 'qa_html':
@@ -72,7 +118,7 @@ function contextualAssetFallback(key, title) {
   }
 }
 
-function sanitizeContextualAssets(assets, title = '') {
+function sanitizeContextualAssets(assets, title = '', excerpt = '') {
   if (!assets || typeof assets !== 'object') return null;
   const keys = ['data_table_html', 'faq_html', 'depth_html', 'qa_html', 'authority_html'];
   const out = { ...assets };
@@ -80,8 +126,12 @@ function sanitizeContextualAssets(assets, title = '') {
     const raw = out[key];
     const missing = !raw || typeof raw !== 'string' || !String(raw).trim();
     const generic = !missing && looksGenericCopy(raw);
-    if (missing || generic) {
-      out[key] = contextualAssetFallback(key, title);
+    let bad = missing || generic;
+    if (key === 'data_table_html' && !missing && looksGenericTemplateTable(raw)) {
+      bad = true;
+    }
+    if (bad) {
+      out[key] = contextualAssetFallback(key, title, excerpt);
     }
   }
   for (const key of keys) {
@@ -208,7 +258,7 @@ async function generateContextualAssets(title, content) {
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: [
-        { role: "user", parts: [{ text: `Article title: ${title}\nArticle excerpt (from the page): ${plainText}\n\nWrite HTML snippets this site could paste into WordPress. Stay tightly on the article's real subject and facts from the excerpt. Do not use meta filler, SEO clichés, or template phrases (avoid wording like: "key details", "what you need to know", "deep dive", "key takeaways", "important considerations", "really", duplicated phrases, or headings that sound like a content mill).\n\nNever output instructional placeholder text about statistics (for example do not write "add a verified", "source-backed metric", "figure and source name", or similar editor prompts). For authority_html, either use real numbers clearly grounded in the excerpt or write an empty <p></p>.\n\nNever write marketing slogans or ad copy. Specifically avoid lines like "awaken your senses", "experience the finest", "perfect morning", "crafted with passion", "why choose us", or similar promo language.\n\nFormatting rules:\n- Keep visual hierarchy clean: main section titles are H2; sub-sections inside cards/columns should be H3 or H4 (not H2).\n- Never use inline fixed heights/min-heights/overflow clipping styles.\n- If you output multi-column or multi-card content, keep each column structurally parallel (same type of container, similar heading level + paragraph/list pattern).\n- Ensure link and text colors stay readable on dark backgrounds (high contrast, no dark text on dark backgrounds).\n- Table headers must be concise and prominent.\n\nInclude: (1) a comparison table in <figure class=\"wp-block-table\"><table>...</table></figure>, (2) a short FAQ (one clear H2 title + H3 questions + answers), (3) one extra section (H2 + paragraph) that continues the article substance, (4) a compact Q&A block, (5) one paragraph of plausible, topic-relevant statistics written as normal sentences (no heading).` }] }
+        { role: "user", parts: [{ text: `Article title: ${title}\nArticle excerpt (from the page): ${plainText}\n\nWrite HTML snippets this site could paste into WordPress. Stay tightly on the article's real subject and facts from the excerpt. Do not use meta filler, SEO clichés, or template phrases (avoid wording like: "key details", "what you need to know", "deep dive", "key takeaways", "important considerations", "really", duplicated phrases, or headings that sound like a content mill).\n\nNever output instructional placeholder text about statistics (for example do not write "add a verified", "source-backed metric", "figure and source name", or similar editor prompts). For authority_html, either use real numbers clearly grounded in the excerpt or write an empty <p></p>.\n\nNever write marketing slogans or ad copy. Specifically avoid lines like "awaken your senses", "experience the finest", "perfect morning", "crafted with passion", "why choose us", or similar promo language.\n\nFor data_table_html specifically:\n- Every row must quote concrete ideas from the excerpt or restate them in plain words tied to this topic.\n- Forbidden: abstract rows like "Primary Benefit", "Secondary Benefit", "Consideration", "Key advantage related to…", "Additional value point", "Important factor to evaluate", or priority cells that are only "High", "Medium", "Varies", "Impact" columns filled with filler. Use real comparisons (e.g. named options, steps, or facts from the article), not a generic benefits matrix.\n\nFormatting rules:\n- Keep visual hierarchy clean: main section titles are H2; sub-sections inside cards/columns should be H3 or H4 (not H2).\n- Never use inline fixed heights/min-heights/overflow clipping styles.\n- If you output multi-column or multi-card content, keep each column structurally parallel (same type of container, similar heading level + paragraph/list pattern).\n- Ensure link and text colors stay readable on dark backgrounds (high contrast, no dark text on dark backgrounds).\n- Table headers must be concise and prominent.\n\nInclude: (1) a comparison table in <figure class=\"wp-block-table\"><table>...</table></figure>, (2) a short FAQ (one clear H2 title + H3 questions + answers), (3) one extra section (H2 + paragraph) that continues the article substance, (4) a compact Q&A block, (5) one paragraph of plausible, topic-relevant statistics written as normal sentences (no heading).` }] }
       ],
       config: {
         systemInstruction: "You are an experienced web editor and accessibility-minded frontend writer. Output valid, minimal HTML fragments suitable for WordPress. Use only the supplied title and excerpt; be specific and natural. Never use generic SEO headings, marketing slogans, or repetitive filler. Keep structure balanced, readable, and semantically correct. Return strict JSON only.",
@@ -216,7 +266,7 @@ async function generateContextualAssets(title, content) {
         responseSchema: {
           type: "OBJECT",
           properties: {
-            data_table_html: { type: "STRING", description: "Comparison table about the article topic only; <figure class=\"wp-block-table\"><table>...</table></figure>." },
+            data_table_html: { type: "STRING", description: "Concrete comparison rows grounded in the excerpt (no generic benefit/impact matrix). <figure class=\"wp-block-table\"><table>...</table></figure>." },
             faq_html: { type: "STRING", description: "FAQ: one concrete H2 title + 2–3 H3 questions with <p> answers; wording must match the article topic." },
             depth_html: { type: "STRING", description: "One H2 (specific to the topic, not a generic label) plus one <p> that adds useful detail grounded in the excerpt." },
             qa_html: { type: "STRING", description: "Short Q&A block: natural question heading plus direct answer paragraph about the article's core idea." },
@@ -228,7 +278,7 @@ async function generateContextualAssets(title, content) {
     });
     
     try {
-      return sanitizeContextualAssets(JSON.parse(response.text), title);
+      return sanitizeContextualAssets(JSON.parse(response.text), title, plainText);
     } catch (e) {
       console.error('[GEO] Failed to parse Gemini response:', e.message);
       throw new Error("Gemini parsing failed");
