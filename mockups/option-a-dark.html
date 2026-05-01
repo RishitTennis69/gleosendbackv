@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Option A — Dark Mode</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#060b18;color:#e2e8f0;min-height:100vh;display:flex;-webkit-font-smoothing:antialiased}
+
+/* sidebar */
+.sidebar{width:220px;background:#090f1f;border-right:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;height:100vh;position:sticky;top:0;flex-shrink:0}
+.sb-top{padding:24px 18px 16px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.logo{font-size:17px;font-weight:800;letter-spacing:-0.7px;color:#f1f5f9}
+.logo span{color:#818cf8}
+.ws{margin-top:14px;display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:9px;cursor:pointer}
+.ws-dot{width:7px;height:7px;background:#4ade80;border-radius:50%;box-shadow:0 0 0 3px rgba(74,222,128,0.2);flex-shrink:0}
+.ws-name{font-size:12px;font-weight:500;color:#64748b;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav{padding:12px 10px;flex:1}
+.nav-group{font-size:9.5px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#64748b;padding:10px 8px 4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;font-size:13px;font-weight:500;color:#94a3b8;cursor:pointer;margin-bottom:2px;transition:all 0.12s}
+.nav-item:hover{background:rgba(255,255,255,0.05);color:#94a3b8}
+.nav-item.active{background:rgba(99,102,241,0.15);color:#a5b4fc;font-weight:600}
+.nav-item.active .nav-icon{color:#818cf8}
+.nav-icon{width:15px;height:15px;opacity:0.6;flex-shrink:0}
+.nav-item.active .nav-icon{opacity:1}
+.sb-footer{padding:14px 18px;border-top:1px solid rgba(255,255,255,0.05)}
+.sb-footer-text{font-size:11px;color:#64748b}
+
+/* main */
+.main{flex:1;padding:40px 48px;overflow-y:auto;background:linear-gradient(160deg,#080d1c 0%,#060b18 60%)}
+
+/* page header */
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:36px}
+.page-title{font-size:22px;font-weight:800;color:#f1f5f9;letter-spacing:-0.7px}
+.page-sub{font-size:13px;color:#94a3b8;margin-top:5px;font-weight:400}
+.header-actions{display:flex;gap:10px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:7px;font-family:inherit;font-size:13px;font-weight:600;padding:9px 20px;border-radius:9px;cursor:pointer;border:none;transition:all 0.15s;white-space:nowrap}
+.btn-primary{background:linear-gradient(135deg,#4f46e5,#6366f1);color:#fff;box-shadow:0 4px 20px rgba(99,102,241,0.4)}
+.btn-primary:hover{box-shadow:0 6px 28px rgba(99,102,241,0.55);transform:translateY(-1px)}
+.btn-outline{background:rgba(255,255,255,0.05);color:#94a3b8;border:1px solid rgba(255,255,255,0.1)}
+.btn-outline:hover{background:rgba(255,255,255,0.09);color:#e2e8f0}
+.badge-dot{width:8px;height:8px;background:#4ade80;border-radius:50%;box-shadow:0 0 0 2px rgba(74,222,128,0.25)}
+
+/* scan card */
+.scan-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:22px 24px;margin-bottom:10px;backdrop-filter:blur(8px)}
+.scan-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.scan-card-title{font-size:14px;font-weight:700;color:#e2e8f0}
+.post-list{border:1px solid rgba(255,255,255,0.07);border-radius:10px;overflow:hidden}
+.post-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;transition:background 0.1s}
+.post-item:last-child{border-bottom:none}
+.post-item:hover{background:rgba(255,255,255,0.04)}
+.post-item input{accent-color:#6366f1;width:14px;height:14px}
+.post-item label{font-size:13px;color:#cbd5e1;cursor:pointer}
+.progress-bar{height:4px;background:rgba(255,255,255,0.07);border-radius:4px;margin-top:14px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#4f46e5,#818cf8);border-radius:4px;width:33%}
+
+/* results */
+.results-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#64748b;margin:28px 0 12px}
+
+/* report card */
+.report-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:16px;margin-bottom:8px;overflow:hidden;transition:all 0.15s;cursor:pointer}
+.report-card:hover{border-color:rgba(99,102,241,0.35);background:rgba(99,102,241,0.04);box-shadow:0 0 0 1px rgba(99,102,241,0.15),0 8px 32px rgba(0,0,0,0.4)}
+.report-header{display:flex;align-items:center;gap:16px;padding:16px 20px}
+
+/* score ring */
+.score-ring-wrap{flex-shrink:0;position:relative;width:52px;height:52px}
+.score-ring-wrap svg{transform:rotate(-90deg)}
+.score-ring-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column}
+.score-num{font-size:14px;font-weight:800;color:#f1f5f9;letter-spacing:-0.5px;line-height:1}
+.score-denom{font-size:8px;color:#64748b;font-weight:600;margin-top:1px}
+
+.report-info{flex:1;min-width:0}
+.report-title{font-size:13.5px;font-weight:600;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-0.1px}
+.report-meta{font-size:11.5px;color:#94a3b8;margin-top:3px}
+.report-chips{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap}
+.chip{font-size:10px;font-weight:700;padding:2px 9px;border-radius:100px;border:1px solid transparent}
+.chip-crit{background:rgba(239,68,68,0.12);color:#f87171;border-color:rgba(239,68,68,0.25)}
+.chip-high{background:rgba(245,158,11,0.12);color:#fbbf24;border-color:rgba(245,158,11,0.25)}
+.chip-pass{background:rgba(74,222,128,0.1);color:#4ade80;border-color:rgba(74,222,128,0.2)}
+
+/* expanded card body */
+.report-body{border-top:1px solid rgba(255,255,255,0.06);padding:0}
+
+/* apply all */
+.apply-all{display:flex;align-items:center;gap:14px;padding:14px 20px;background:rgba(99,102,241,0.08);border-bottom:1px solid rgba(99,102,241,0.15)}
+.apply-hint{font-size:12.5px;color:#6366f1;font-weight:400}
+
+/* geo report table */
+.geo-section{padding:20px}
+.geo-section-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;margin-bottom:10px}
+.geo-table{border:1px solid rgba(255,255,255,0.07);border-radius:12px;overflow:hidden}
+.geo-row{display:flex;align-items:center;gap:16px;padding:13px 16px;border-bottom:1px solid rgba(255,255,255,0.05);transition:background 0.1s}
+.geo-row:last-child{border-bottom:none}
+.geo-row:hover{background:rgba(255,255,255,0.03)}
+.geo-row.crit{border-left:3px solid #ef4444;padding-left:13px}
+.geo-row.high{border-left:3px solid #f59e0b;padding-left:13px}
+.geo-row.pass{border-left:3px solid #4ade80;padding-left:13px}
+.geo-row.medium{border-left:3px solid #818cf8;padding-left:13px}
+.geo-row-info{flex:1;min-width:0}
+.geo-area{font-size:13px;font-weight:600;color:#e2e8f0;margin-bottom:3px}
+.geo-desc{font-size:12px;color:#94a3b8;line-height:1.5}
+.geo-score-wrap{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.geo-score-num{font-size:13px;font-weight:700;min-width:36px;text-align:right}
+.geo-score-num.crit-c{color:#f87171}
+.geo-score-num.high-c{color:#fbbf24}
+.geo-score-num.pass-c{color:#4ade80}
+.geo-score-num.med-c{color:#818cf8}
+.geo-score-denom{font-size:11px;color:#64748b}
+.geo-bar{width:80px;height:4px;background:rgba(255,255,255,0.07);border-radius:100px;overflow:hidden}
+.geo-bar-fill{height:100%;border-radius:100px;transition:width 0.6s ease}
+.fix-btn{font-size:11.5px;font-weight:600;background:linear-gradient(135deg,#4f46e5,#6366f1);color:#fff;border:none;padding:5px 14px;border-radius:7px;cursor:pointer;white-space:nowrap;box-shadow:0 2px 8px rgba(99,102,241,0.4)}
+.pass-tag{font-size:12px;font-weight:600;color:#4ade80;white-space:nowrap}
+.manual-tag{font-size:12px;color:#94a3b8}
+
+/* signals */
+.signals-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:4px}
+.signal{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:9px;padding:11px 14px}
+.signal.good{border-color:rgba(74,222,128,0.25);background:rgba(74,222,128,0.06)}
+.signal.bad{border-color:rgba(239,68,68,0.2);background:rgba(239,68,68,0.05)}
+.sig-label{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:5px;font-weight:600;display:block}
+.sig-value{font-size:17px;font-weight:700;color:#e2e8f0}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sb-top">
+    <div class="logo">gl<span>eo</span></div>
+    <div class="ws">
+      <div class="ws-dot"></div>
+      <span class="ws-name">acme-plumbing.com</span>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="nav-group">Workspace</div>
+    <div class="nav-item active">
+      <svg class="nav-icon" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="1" y="1" width="5.5" height="5.5" rx="1.2"/><rect x="8.5" y="1" width="5.5" height="5.5" rx="1.2"/><rect x="1" y="8.5" width="5.5" height="5.5" rx="1.2"/><rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1.2"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="1,11 4.5,7 7.5,9 11,4 14,6"/></svg>
+      Analytics
+    </div>
+    <div class="nav-group">Account</div>
+    <div class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7.5" cy="5" r="3"/><path d="M2.5 13.5c0-2.8 2.2-5 5-5s5 2.2 5 5"/></svg>
+      Settings
+    </div>
+  </nav>
+  <div class="sb-footer">
+    <div class="sb-footer-text">gleo v2.1 · Workspace Pro</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Dashboard</div>
+      <div class="page-sub">GEO optimization for acme-plumbing.com</div>
+    </div>
+    <div class="header-actions">
+      <div class="badge-dot"></div>
+      <button class="btn btn-outline">Settings</button>
+      <button class="btn btn-primary">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5.5" cy="5.5" r="4"/><path d="M10 10l2.5 2.5"/></svg>
+        Analyze posts
+      </button>
+    </div>
+  </div>
+
+  <!-- Scan card -->
+  <div class="scan-card">
+    <div class="scan-card-header">
+      <span class="scan-card-title">Select posts to analyze</span>
+      <button class="btn btn-primary" style="font-size:12px;padding:7px 16px">Analyze 1 post</button>
+    </div>
+    <div class="post-list">
+      <div class="post-item"><input type="checkbox" checked><label>How to fix a leaking pipe</label></div>
+      <div class="post-item"><input type="checkbox"><label>Best emergency plumbers in Austin</label></div>
+      <div class="post-item"><input type="checkbox"><label>Water heater installation guide</label></div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+  </div>
+
+  <!-- Results -->
+  <div class="results-label">Scan results — 1 post</div>
+
+  <!-- Collapsed card -->
+  <div class="report-card" style="margin-bottom:8px">
+    <div class="report-header">
+      <!-- Score ring -->
+      <div class="score-ring-wrap">
+        <svg width="52" height="52" viewBox="0 0 52 52">
+          <circle cx="26" cy="26" r="22" stroke="rgba(255,255,255,0.07)" stroke-width="4" fill="none"/>
+          <circle cx="26" cy="26" r="22" stroke="url(#grad-a)" stroke-width="4" fill="none" stroke-dasharray="138.2" stroke-dashoffset="55.3" stroke-linecap="round"/>
+          <defs><linearGradient id="grad-a" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#f87171"/></linearGradient></defs>
+        </svg>
+        <div class="score-ring-center"><div class="score-num">40</div><div class="score-denom">/100</div></div>
+      </div>
+      <div class="report-info">
+        <div class="report-title">How to fix a leaking pipe</div>
+        <div class="report-meta">1,240 words · Last scanned just now</div>
+        <div class="report-chips">
+          <span class="chip chip-crit">2 critical</span>
+          <span class="chip chip-high">2 high</span>
+          <span class="chip chip-pass">3 passing</span>
+        </div>
+      </div>
+      <svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="#334155" stroke-width="1.8"><path d="M4.5 3L7.5 6L4.5 9"/></svg>
+    </div>
+    <!-- Expanded body -->
+    <div class="report-body">
+      <div class="apply-all">
+        <button class="btn btn-primary" style="font-size:12px;padding:7px 16px;flex-shrink:0">Apply all auto-fixes</button>
+        <button class="btn btn-outline" style="font-size:12px;padding:7px 14px;flex-shrink:0">Preview on site</button>
+        <span class="apply-hint">Fixes needing input still require a click.</span>
+      </div>
+      <div class="geo-section">
+        <div class="geo-section-label">GEO Report</div>
+        <div class="geo-table">
+          <div class="geo-row crit">
+            <div class="geo-row-info"><div class="geo-area">Schema Markup</div><div class="geo-desc">No JSON-LD schema detected. AI engines can't identify your content type.</div></div>
+            <div class="geo-score-wrap"><span class="geo-score-num crit-c">0<span class="geo-score-denom">/10</span></span><div class="geo-bar"><div class="geo-bar-fill" style="width:0%;background:#ef4444"></div></div></div>
+            <button class="fix-btn">Fix</button>
+          </div>
+          <div class="geo-row high">
+            <div class="geo-row-info"><div class="geo-area">Authority</div><div class="geo-desc">No statistics or data points found. Quantitative claims increase citation likelihood.</div></div>
+            <div class="geo-score-wrap"><span class="geo-score-num high-c">1<span class="geo-score-denom">/5</span></span><div class="geo-bar"><div class="geo-bar-fill" style="width:20%;background:#f59e0b"></div></div></div>
+            <button class="fix-btn">Fix</button>
+          </div>
+          <div class="geo-row medium">
+            <div class="geo-row-info"><div class="geo-area">Content Depth</div><div class="geo-desc">Article could benefit from more in-depth coverage of subtopics.</div></div>
+            <div class="geo-score-wrap"><span class="geo-score-num med-c">5<span class="geo-score-denom">/10</span></span><div class="geo-bar"><div class="geo-bar-fill" style="width:50%;background:#818cf8"></div></div></div>
+            <button class="fix-btn">Fix</button>
+          </div>
+          <div class="geo-row pass">
+            <div class="geo-row-info"><div class="geo-area">Structure</div><div class="geo-desc">Strong heading structure with multiple sections. Easy for AI to parse.</div></div>
+            <div class="geo-score-wrap"><span class="geo-score-num pass-c">8<span class="geo-score-denom">/10</span></span><div class="geo-bar"><div class="geo-bar-fill" style="width:80%;background:#4ade80"></div></div></div>
+            <span class="pass-tag">✓ Passing</span>
+          </div>
+          <div class="geo-row pass">
+            <div class="geo-row-info"><div class="geo-area">Formatting</div><div class="geo-desc">Good use of lists. Bullet points help AI identify key points quickly.</div></div>
+            <div class="geo-score-wrap"><span class="geo-score-num pass-c">7<span class="geo-score-denom">/10</span></span><div class="geo-bar"><div class="geo-bar-fill" style="width:70%;background:#4ade80"></div></div></div>
+            <span class="pass-tag">✓ Passing</span>
+          </div>
+        </div>
+      </div>
+      <!-- Signals -->
+      <div class="geo-section" style="padding-top:0">
+        <div class="geo-section-label">Content Signals</div>
+        <div class="signals-grid">
+          <div class="signal"><span class="sig-label">Word count</span><span class="sig-value">1,240</span></div>
+          <div class="signal good"><span class="sig-label">Headings</span><span class="sig-value">6 ✓</span></div>
+          <div class="signal bad"><span class="sig-label">Schema</span><span class="sig-value">No</span></div>
+          <div class="signal good"><span class="sig-label">Lists</span><span class="sig-value">8 ✓</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

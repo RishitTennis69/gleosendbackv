@@ -1,0 +1,26 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "gleo-node-api",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["index.js"],
+      "port": 8765,
+      "autoPort": false,
+      "cwd": "C:\\Users\\Krish Grover\\Documents\\gleoishere-main-main\\gleo-node-api"
+    },
+    {
+      "name": "gleo-wp-plugin (watch)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start"],
+      "port": 0,
+      "cwd": "C:\\Users\\Krish Grover\\Local Sites\\gleo-test\\app\\public\\wp-content\\plugins\\gleo-wp-plugin"
+    },
+    {
+      "name": "local-wp",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "echo Local WP already running"],
+      "port": 80
+    }
+  ]
+}

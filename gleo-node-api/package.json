@@ -1,0 +1,25 @@
+{
+  "name": "gleo-node-api",
+  "version": "1.0.0",
+  "description": "External Node.js (Express) API for Gleo heavy LLM processing",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "@google/genai": "^1.45.0",
+    "@supabase/supabase-js": "^2.99.1",
+    "axios": "^1.13.6",
+    "cheerio": "^1.2.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^4.18.2",
+    "node-cron": "^4.2.1",
+    "openai": "^6.29.0",
+    "pg": "^8.20.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

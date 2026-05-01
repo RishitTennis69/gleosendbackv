@@ -1,0 +1,8 @@
+.DS_Store
+**/.DS_Store
+node_modules/
+gleo-wp-plugin/node_modules/
+gleo-node-api/node_modules/
+vendor/
+*.log
+.env

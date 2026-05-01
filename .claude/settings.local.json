@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/Krish Grover/Desktop/**)",
+      "Bash(python3 -c \":*)",
+      "Read(//c/Users/Krish Grover/Local Sites/gleo-test/app/public/wp-content/plugins/gleo-wp-plugin/**)",
+      "Bash(npm run:*)",
+      "Bash(gh auth:*)",
+      "Bash(where git:*)",
+      "Bash(where gh:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(python3 -:*)"
+    ]
+  }
+}

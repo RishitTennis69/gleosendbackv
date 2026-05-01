@@ -1,0 +1,2036 @@
+@import url(https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap);
+
+/* ==========================================================================
+   Design tokens
+   ========================================================================== */
+:root {
+
+	/* Brand */
+	--blue: #0369a1;
+	--blue-bg: #e0f2fe;
+	--blue-dark: #0284c7;
+	--blue-mid: #0ea5e9;
+
+	/* Neutrals */
+	--fg: #0f172a;
+	--fg-mid: #334155;
+	--fg-muted: #94a3b8;
+	--border: #e2e8f0;
+	--border-lt: #f1f5f9;
+	--surface: #fff;
+	--canvas: #f8fafc;
+
+	/* Semantic */
+	--green: #059669;
+	--green-bg: #ecfdf5;
+	--amber: #d97706;
+	--amber-bg: #fffbeb;
+	--red: #dc2626;
+	--red-bg: #fef2f2;
+
+	/* Shape */
+	--radius: 8px;
+	--radius-lg: 12px;
+	--radius-xl: 16px;
+
+	/* Shadows (flat-design style) */
+	--shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+	--shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.07);
+	--shadow-md: 0 4px 6px rgba(0, 0, 0, 0.08);
+	--shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+	/* Motion */
+	--ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+	--transition-fast: 0.12s ease;
+	--transition-base: 0.15s ease;
+
+	/* Dark sidebar */
+	--sb-bg: #0f172a;
+	--sb-border: rgba(255, 255, 255, 0.07);
+	--sb-fg: #64748b;
+	--sb-fg-hi: #e2e8f0;
+	--sb-hover: rgba(255, 255, 255, 0.06);
+	--sb-active-bg: rgba(3, 105, 161, 0.18);
+	--sb-active-fg: #38bdf8;
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+.gleo-dashboard {
+	display: flex;
+	min-height: 100vh;
+	margin: 0;
+	max-width: none;
+	background: var(--canvas);
+	color: var(--fg);
+	font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+/* ==========================================================================
+   Sidebar
+   ========================================================================== */
+.gleo-sidebar {
+	position: sticky;
+	top: 0;
+	display: flex;
+	flex-direction: column;
+	flex-shrink: 0;
+	width: 220px;
+	height: 100vh;
+	overflow-y: auto;
+	background: var(--sb-bg);
+	border-right: 1px solid var(--sb-border);
+}
+
+.gleo-sidebar-top {
+	padding: 22px 16px 14px;
+	border-bottom: 1px solid var(--sb-border);
+}
+
+.gleo-logo {
+	color: var(--sb-fg-hi);
+	font-size: 16px;
+	font-weight: 800;
+	letter-spacing: -0.6px;
+}
+
+.gleo-logo em {
+	color: #818cf8;
+	font-style: normal;
+}
+
+.gleo-workspace {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 12px;
+	padding: 7px 10px;
+	background: rgba(255, 255, 255, 0.05);
+	border: 1px solid rgba(255, 255, 255, 0.07);
+	border-radius: 8px;
+	cursor: pointer;
+	transition: background var(--transition-base);
+}
+
+.gleo-workspace:hover {
+	background: rgba(255, 255, 255, 0.09);
+}
+
+.gleo-ws-dot {
+	flex-shrink: 0;
+	width: 7px;
+	height: 7px;
+	background: #22c55e;
+	border-radius: 50%;
+	box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25);
+}
+
+.gleo-ws-name {
+	flex: 1;
+	overflow: hidden;
+	color: var(--sb-fg);
+	font-size: 12px;
+	font-weight: 500;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.gleo-nav {
+	flex: 1;
+	padding: 10px 8px;
+}
+
+.gleo-nav-group {
+	padding: 10px 8px 5px;
+	color: #64748b;
+	font-size: 10px;
+	font-weight: 600;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+}
+
+.gleo-nav-item {
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	margin-bottom: 1px;
+	padding: 8px 10px;
+	border-radius: 8px;
+	color: var(--sb-fg);
+	font-size: 13px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.gleo-nav-item:hover {
+	background: var(--sb-hover);
+	color: var(--sb-fg-hi);
+}
+
+.gleo-nav-item.active {
+	background: var(--sb-active-bg);
+	color: var(--sb-active-fg);
+	font-weight: 600;
+}
+
+.gleo-nav-item svg {
+	flex-shrink: 0;
+	opacity: 0.5;
+}
+
+.gleo-nav-item:hover svg {
+	opacity: 0.75;
+}
+
+.gleo-nav-item.active svg {
+	opacity: 1;
+}
+
+.gleo-nav-badge {
+	margin-left: auto;
+	padding: 1px 7px;
+	background: rgba(239, 68, 68, 0.18);
+	border-radius: 100px;
+	color: #f87171;
+	font-size: 10px;
+	font-weight: 700;
+}
+
+.gleo-nav-badge.blue {
+	background: rgba(99, 102, 241, 0.2);
+	color: #a5b4fc;
+}
+
+.gleo-sidebar-footer {
+	padding: 14px 16px;
+	border-top: 1px solid var(--sb-border);
+	color: var(--sb-fg);
+	font-size: 11px;
+}
+
+/* ==========================================================================
+   Main content area
+   ========================================================================== */
+.gleo-main {
+	flex: 1;
+	min-width: 0;
+	padding: 36px 44px;
+	overflow-y: auto;
+}
+
+/* ==========================================================================
+   Page header
+   ========================================================================== */
+.gleo-page-header {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 32px;
+}
+
+.gleo-page-header h1 {
+	margin: 0;
+	color: var(--fg);
+	font-size: 21px;
+	font-weight: 700;
+	line-height: 1.2;
+	letter-spacing: -0.5px;
+}
+
+.gleo-page-subtitle {
+	margin-top: 4px;
+	color: var(--fg-muted);
+	font-size: 13px;
+	font-weight: 400;
+}
+
+.gleo-header-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+.gleo-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	padding: 8px 18px;
+	border-radius: 8px;
+	font-family: inherit;
+	font-size: 13px;
+	font-weight: 600;
+	letter-spacing: -0.1px;
+	white-space: nowrap;
+	cursor: pointer;
+	transition: all 0.14s ease;
+}
+
+.gleo-btn:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
+}
+
+.gleo-btn-primary {
+	background: var(--blue);
+	border: none;
+	color: #fff;
+	box-shadow: 0 1px 3px rgba(3, 105, 161, 0.3), 0 1px 2px rgba(3, 105, 161, 0.2);
+}
+
+.gleo-btn-primary:hover:not(:disabled) {
+	background: var(--blue-dark);
+	box-shadow: 0 4px 12px rgba(3, 105, 161, 0.35);
+	transform: translateY(-0.5px);
+}
+
+.gleo-btn-primary:active:not(:disabled) {
+	transform: translateY(0);
+}
+
+.gleo-btn-outline {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	color: var(--fg-mid);
+	box-shadow: var(--shadow-xs);
+}
+
+.gleo-btn-outline:hover:not(:disabled) {
+	background: var(--canvas);
+	border-color: #cbd5e1;
+}
+
+.gleo-btn-ghost {
+	padding: 6px 10px;
+	background: transparent;
+	border: none;
+	color: var(--fg-muted);
+}
+
+.gleo-btn-ghost:hover {
+	background: var(--border-lt);
+	color: var(--fg);
+}
+
+/* ==========================================================================
+   Section labels
+   ========================================================================== */
+.gleo-section-label {
+	margin-bottom: 12px;
+	color: var(--fg-muted);
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.07em;
+	text-transform: uppercase;
+}
+
+/* ==========================================================================
+   Metrics strip (KPI summary row)
+   ========================================================================== */
+.gleo-metrics-strip {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 14px;
+	margin-bottom: 22px;
+}
+
+/* ==========================================================================
+   KPI grid
+   ========================================================================== */
+.gleo-kpi-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 20px;
+	margin-bottom: 32px;
+}
+
+.gleo-kpi {
+	padding: 24px;
+	background: rgba(255, 255, 255, 0.7);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-xl);
+	backdrop-filter: blur(12px);
+	box-shadow: var(--shadow-sm);
+	transition: all 0.4s var(--ease-out);
+}
+
+.gleo-kpi:hover {
+	background: #fff;
+	border-color: rgba(3, 105, 161, 0.3);
+	box-shadow: var(--shadow-md);
+	transform: translateY(-2px) scale(0.98);
+}
+
+.gleo-kpi-label {
+	margin-bottom: 8px;
+	color: var(--fg-muted);
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.07em;
+	text-transform: uppercase;
+}
+
+.gleo-kpi-value {
+	color: var(--fg);
+	font-size: 28px;
+	font-weight: 800;
+	line-height: 1;
+	letter-spacing: -1.5px;
+}
+
+.gleo-kpi-value.accent {
+	color: var(--blue);
+}
+
+.gleo-kpi-delta {
+	margin-top: 6px;
+	font-size: 11.5px;
+	font-weight: 600;
+}
+
+.gleo-kpi-delta.up {
+	color: var(--green);
+}
+
+.gleo-kpi-delta.warn {
+	color: var(--amber);
+}
+
+.gleo-kpi-delta.down {
+	color: var(--red);
+}
+
+/* ==========================================================================
+   Generic card
+   ========================================================================== */
+.gleo-card {
+	margin-bottom: 12px;
+	overflow: hidden;
+	background: rgba(255, 255, 255, 0.7);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-xl);
+	backdrop-filter: blur(12px);
+	box-shadow: var(--shadow-sm);
+	transition: all 0.4s var(--ease-out);
+}
+
+.gleo-card:hover {
+	border-color: rgba(3, 105, 161, 0.2);
+	box-shadow: var(--shadow-md);
+}
+
+.gleo-card-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 16px 22px;
+	border-bottom: 1px solid var(--border-lt);
+}
+
+.gleo-card-header h3 {
+	margin: 0;
+	color: var(--fg);
+	font-size: 14px;
+	font-weight: 700;
+	letter-spacing: -0.2px;
+}
+
+.gleo-card-header .gleo-card-meta {
+	color: var(--fg-muted);
+	font-size: 12px;
+}
+
+.gleo-card-body {
+	padding: 20px 22px;
+}
+
+/* ==========================================================================
+   Report card (per-post result)
+   ========================================================================== */
+.gleo-report-card {
+	margin-bottom: 12px;
+	overflow: hidden;
+	background: rgba(255, 255, 255, 0.7);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-xl);
+	backdrop-filter: blur(12px);
+	box-shadow: var(--shadow-sm);
+	transition: all 0.4s var(--ease-out);
+}
+
+.gleo-report-card:hover {
+	background: #fff;
+	border-color: rgba(3, 105, 161, 0.3);
+	box-shadow: var(--shadow-md);
+	transform: translateY(-1px) scale(0.998);
+}
+
+.gleo-report-header {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 15px 20px;
+	cursor: pointer;
+}
+
+.gleo-report-header-static {
+	cursor: default;
+}
+
+.gleo-report-chevron-spacer {
+	flex-shrink: 0;
+	width: 22px;
+}
+
+.gleo-report-workflow {
+	padding: 16px 20px 18px;
+	background: linear-gradient(180deg, #f0f9ff 0%, #fff 55%);
+	border-bottom: 1px solid var(--border-lt);
+}
+
+.gleo-workflow-label {
+	margin: 0 0 12px;
+	color: var(--fg-mid);
+	font-size: 12.5px;
+	font-weight: 600;
+	line-height: 1.45;
+}
+
+.gleo-workflow-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: stretch;
+	gap: 12px;
+}
+
+.gleo-workflow-btn-preview,
+.gleo-workflow-btn-apply {
+	min-height: 48px;
+	padding: 12px 20px !important;
+	border-radius: 10px !important;
+	font-size: 15px !important;
+	font-weight: 700 !important;
+}
+
+.gleo-workflow-btn-preview {
+	flex: 1 1 160px;
+}
+
+.gleo-workflow-btn-apply {
+	flex: 1.15 1 200px;
+	padding: 12px 22px !important;
+}
+
+.gleo-workflow-hint {
+	margin: 12px 0 0;
+	color: var(--fg-muted);
+	font-size: 11.5px;
+	line-height: 1.45;
+}
+
+.gleo-report-title {
+	flex: 1;
+	min-width: 0;
+}
+
+.gleo-report-title h3 {
+	margin: 0;
+	overflow: hidden;
+	color: var(--fg);
+	font-size: 13.5px;
+	font-weight: 600;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	letter-spacing: -0.1px;
+}
+
+.gleo-report-title .gleo-post-meta {
+	margin-top: 2px;
+	color: var(--fg-muted);
+	font-size: 11.5px;
+}
+
+/* ==========================================================================
+   Score chip & inline score bar
+   ========================================================================== */
+.gleo-score-chip {
+	display: inline-flex;
+	align-items: center;
+	flex-shrink: 0;
+	padding: 3px 11px;
+	border-radius: 100px;
+	font-size: 11.5px;
+	font-weight: 700;
+	letter-spacing: 0.01em;
+}
+
+.chip-hi {
+	background: var(--green-bg);
+	border: 1px solid #a7f3d0;
+	color: #065f46;
+}
+
+.chip-md {
+	background: var(--amber-bg);
+	border: 1px solid #fde68a;
+	color: #78350f;
+}
+
+.chip-lo {
+	background: var(--red-bg);
+	border: 1px solid #fecaca;
+	color: #7f1d1d;
+}
+
+.gleo-score-bar {
+	display: flex;
+	align-items: center;
+	flex-shrink: 0;
+	gap: 8px;
+}
+
+.gleo-score-bar-track {
+	width: 60px;
+	height: 4px;
+	overflow: hidden;
+	background: var(--border-lt);
+	border-radius: 10px;
+}
+
+.gleo-score-bar-fill {
+	height: 4px;
+	border-radius: 10px;
+	transition: width 0.6s ease;
+}
+
+.gleo-cat-tag {
+	flex-shrink: 0;
+	padding: 2px 8px;
+	background: var(--border-lt);
+	border-radius: 5px;
+	color: var(--fg-muted);
+	font-size: 11px;
+	font-weight: 500;
+}
+
+.gleo-expand-icon {
+	flex-shrink: 0;
+	color: var(--fg-muted);
+	opacity: 0.6;
+}
+
+/* Report body (expanded) */
+.gleo-report-body {
+	padding: 24px;
+	background: #fafbfd;
+	border-top: 1px solid var(--border-lt);
+}
+
+/* ==========================================================================
+   Priority sections (legacy, kept for modal use)
+   ========================================================================== */
+.gleo-priority-section {
+	margin-bottom: 8px;
+	overflow: hidden;
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+}
+
+.gleo-priority-header {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 11px 16px;
+	background: var(--surface);
+	cursor: pointer;
+	transition: background 0.1s;
+}
+
+.gleo-priority-header:hover {
+	background: var(--canvas);
+}
+
+.gleo-priority-dot {
+	flex-shrink: 0;
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+}
+
+.dot-critical {
+	background: var(--red);
+}
+
+.dot-high {
+	background: var(--amber);
+}
+
+.dot-medium {
+	background: var(--blue);
+}
+
+.dot-positive {
+	background: var(--green);
+}
+
+.gleo-priority-title {
+	flex: 1;
+	color: var(--fg);
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.gleo-priority-count {
+	padding: 2px 8px;
+	background: var(--canvas);
+	border-radius: 100px;
+	color: var(--fg-muted);
+	font-size: 11.5px;
+	font-weight: 600;
+}
+
+.gleo-priority-items {
+	padding: 8px;
+}
+
+/* ==========================================================================
+   Recommendation card
+   ========================================================================== */
+.gleo-rec-card {
+	display: flex;
+	align-items: flex-start;
+	gap: 14px;
+	padding: 11px 12px;
+	border-radius: 8px;
+	transition: background 0.1s;
+}
+
+.gleo-rec-card:hover {
+	background: var(--canvas);
+}
+
+.gleo-rec-card-body {
+	flex: 1;
+	min-width: 0;
+}
+
+.gleo-rec-card-body strong {
+	color: var(--fg);
+	font-size: 13.5px;
+}
+
+.gleo-rec-card-body p {
+	margin: 3px 0 0;
+	color: var(--fg-muted);
+	font-size: 12.5px;
+	line-height: 1.5;
+}
+
+.gleo-rec-score-tag {
+	margin-left: 8px;
+	padding: 2px 7px;
+	background: var(--canvas);
+	border-radius: 5px;
+	color: var(--fg-muted);
+	font-size: 11px;
+	font-weight: 700;
+	vertical-align: middle;
+}
+
+.gleo-manual-tag {
+	color: var(--fg-muted);
+	font-size: 11.5px;
+	font-weight: 500;
+}
+
+/* ==========================================================================
+   "Apply all" CTA banner
+   ========================================================================== */
+.gleo-apply-all-row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 14px;
+	margin: 20px 0 18px;
+	padding: 15px 20px;
+	background: var(--blue-bg);
+	border: 1.5px solid #bae6fd;
+	border-radius: var(--radius-lg);
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.gleo-apply-all-row .gleo-btn-primary {
+	flex-shrink: 0;
+	background: var(--blue);
+	box-shadow: 0 1px 3px rgba(3, 105, 161, 0.4);
+}
+
+.gleo-apply-hint {
+	margin-left: auto;
+	color: var(--blue);
+	font-size: 12.5px;
+	font-weight: 500;
+}
+
+/* ==========================================================================
+   Signals grid
+   ========================================================================== */
+.gleo-section {
+	margin-top: 22px;
+}
+
+.gleo-section h4 {
+	margin: 0 0 10px;
+	color: var(--fg-muted);
+	font-size: 12px;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.gleo-signals-grid {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 8px;
+}
+
+.gleo-signal {
+	padding: 10px 14px;
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	transition: border-color var(--transition-fast);
+}
+
+.gleo-signal.good {
+	background: var(--green-bg);
+	border-color: #a7f3d0;
+}
+
+.gleo-signal.bad {
+	background: var(--red-bg);
+	border-color: #fca5a5;
+}
+
+.gleo-signal-label {
+	display: block;
+	margin-bottom: 4px;
+	color: var(--fg-muted);
+	font-size: 10.5px;
+	font-weight: 500;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.gleo-signal-value {
+	display: block;
+	color: var(--fg);
+	font-size: 16px;
+	font-weight: 700;
+	letter-spacing: -0.3px;
+}
+
+/* ==========================================================================
+   Post selection list
+   ========================================================================== */
+.gleo-post-list {
+	max-height: 264px;
+	margin: 12px 0;
+	padding: 6px;
+	overflow-y: auto;
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+}
+
+.gleo-post-list::-webkit-scrollbar {
+	width: 4px;
+}
+
+.gleo-post-list::-webkit-scrollbar-thumb {
+	background: var(--border);
+	border-radius: 4px;
+}
+
+.gleo-post-item {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 9px 10px;
+	border-radius: 7px;
+	cursor: pointer;
+	transition: background 0.1s;
+}
+
+.gleo-post-item:hover {
+	background: var(--canvas);
+}
+
+.gleo-post-item input[type="checkbox"] {
+	width: 15px;
+	height: 15px;
+	accent-color: var(--blue);
+	cursor: pointer;
+}
+
+.gleo-post-item label {
+	flex: 1;
+	color: var(--fg-mid);
+	font-size: 13px;
+	cursor: pointer;
+}
+
+/* ==========================================================================
+   Progress
+   ========================================================================== */
+.gleo-progress-bar {
+	height: 5px;
+	margin-top: 10px;
+	overflow: hidden;
+	background: var(--border-lt);
+	border-radius: 10px;
+}
+
+.gleo-progress-fill {
+	height: 100%;
+	background: linear-gradient(90deg, var(--blue) 0%, var(--blue-mid) 100%);
+	border-radius: 10px;
+	transition: width 0.7s ease;
+}
+
+.gleo-progress-bar--indeterminate {
+	position: relative;
+}
+
+.gleo-progress-indeterminate-strip {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 36%;
+	height: 100%;
+	background: linear-gradient(90deg, var(--blue) 0%, var(--blue-mid) 100%);
+	border-radius: 10px;
+	animation: gleo-indeterminate-slide 1.35s ease-in-out infinite;
+}
+
+@keyframes gleo-indeterminate-slide {
+
+	0% {
+		transform: translateX(-30%);
+	}
+
+	100% {
+		transform: translateX(300%);
+	}
+}
+
+/* ==========================================================================
+   Before/after preview blocks
+   ========================================================================== */
+.gleo-before-after {
+	display: flex;
+	align-items: stretch;
+	gap: 14px;
+}
+
+.gleo-ba-column {
+	flex: 1;
+	padding: 14px;
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+}
+
+.gleo-ba-column:first-child {
+	background: var(--red-bg);
+	border-color: #fca5a5;
+}
+
+.gleo-ba-column:last-child {
+	background: var(--green-bg);
+	border-color: #a7f3d0;
+}
+
+.gleo-ba-label {
+	display: inline-block;
+	margin-bottom: 10px;
+	padding: 3px 7px;
+	border-radius: 4px;
+	font-size: 10.5px;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+}
+
+.gleo-ba-label.before {
+	background: #fecaca;
+	color: #991b1b;
+}
+
+.gleo-ba-label.after {
+	background: #a7f3d0;
+	color: #065f46;
+}
+
+.gleo-ba-content {
+	margin: 0;
+	font-size: 13px;
+	line-height: 1.6;
+}
+
+.gleo-ba-content.before {
+	color: #7f1d1d;
+	opacity: 0.8;
+}
+
+.gleo-ba-content.after {
+	color: #064e3b;
+}
+
+/* ==========================================================================
+   Schema block (code preview)
+   ========================================================================== */
+.gleo-schema-block {
+	max-height: 280px;
+	padding: 16px;
+	overflow-y: auto;
+	background: #1e293b;
+	border-radius: var(--radius);
+	color: #e2e8f0;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+	font-size: 12px;
+	line-height: 1.6;
+}
+
+/* ==========================================================================
+   Modal
+   ========================================================================== */
+.gleo-modal-backdrop {
+	position: fixed;
+	inset: 0;
+	z-index: 100000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(15, 22, 41, 0.5);
+	backdrop-filter: blur(3px);
+}
+
+.gleo-modal {
+	width: 480px;
+	max-width: 90vw;
+	padding: 28px;
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow-lg);
+}
+
+.gleo-modal h3 {
+	margin: 0 0 8px;
+	color: var(--fg);
+	font-size: 16px;
+	font-weight: 700;
+	letter-spacing: -0.3px;
+}
+
+.gleo-modal-prompt {
+	margin-bottom: 16px;
+	color: var(--fg-muted);
+	font-size: 13px;
+	line-height: 1.5;
+}
+
+.gleo-modal-input {
+	box-sizing: border-box;
+	width: 100%;
+	padding: 10px 13px;
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	color: var(--fg);
+	font-family: inherit;
+	font-size: 13.5px;
+	resize: vertical;
+	transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.gleo-modal-input:focus {
+	outline: none;
+	border-color: var(--blue);
+	box-shadow: 0 0 0 3px rgba(3, 105, 161, 0.12);
+}
+
+.gleo-modal-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: 16px;
+}
+
+/* ==========================================================================
+   Toasts
+   ========================================================================== */
+.gleo-toast-container {
+	position: fixed;
+	top: 20px;
+	right: 20px;
+	z-index: 999999;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	pointer-events: none;
+}
+
+.gleo-toast {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 12px 20px;
+	background: var(--fg);
+	border-radius: 10px;
+	color: #f1f5f9;
+	font-size: 13px;
+	font-weight: 500;
+	box-shadow: var(--shadow-lg);
+	pointer-events: auto;
+	animation: gleo-toast-in 0.35s var(--ease-out);
+}
+
+.gleo-toast-icon {
+	color: #4ade80;
+	font-size: 14px;
+}
+
+@keyframes gleo-toast-in {
+
+	from {
+		opacity: 0;
+		transform: translateY(-8px) scale(0.97);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0)    scale(1);
+	}
+}
+
+/* ==========================================================================
+   SEO warning banner
+   ========================================================================== */
+.gleo-seo-warning {
+	margin-bottom: 16px;
+	padding: 14px 16px;
+	background: var(--amber-bg);
+	border: 1px solid #fde68a;
+	border-radius: var(--radius);
+	font-size: 13px;
+}
+
+/* ==========================================================================
+   Site preview (full-screen overlay)
+   ========================================================================== */
+.gleo-preview-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 99999;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	background: #0c1120;
+}
+
+.gleo-preview-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-shrink: 0;
+	padding: 11px 20px;
+	background: #0c1120;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.gleo-preview-toolbar {
+	background: #0f172a !important;
+	color: #f8fafc;
+}
+
+.gleo-preview-toolbar .gleo-btn.gleo-preview-chrome-btn {
+	background: #fff !important;
+	border: 1px solid #e2e8f0 !important;
+	color: #0f172a !important;
+	-webkit-text-fill-color: #0f172a;
+}
+
+.gleo-preview-toolbar .gleo-btn.gleo-preview-chrome-btn:hover:not(:disabled) {
+	background: #f1f5f9 !important;
+	border-color: #cbd5e1 !important;
+}
+
+.gleo-preview-exit-btn {
+	box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+}
+
+/* Tour overlay: step names are authored in title case (avoid CSS uppercase). */
+.gleo-tour-step-title {
+	text-transform: none;
+}
+
+.gleo-preview-header h4 {
+	margin: 0;
+	color: #f1f5f9;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.gleo-preview-body {
+	display: flex;
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
+}
+
+.gleo-preview-body--flex {
+	display: flex;
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
+}
+
+.gleo-preview-iframe-shell {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	width: 100%;
+}
+
+.gleo-preview-iframe {
+	flex: 1;
+	min-height: 0;
+	width: 100%;
+	background: #fff;
+	border: none;
+	transition: opacity 0.5s ease;
+}
+
+.gleo-preview-sidebar {
+	flex-shrink: 0;
+	width: 292px;
+	padding: 14px 12px;
+	overflow-y: auto;
+	background: #0c1120;
+	border-right: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.gleo-preview-sidebar-label {
+	margin-bottom: 10px;
+	color: #334155;
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.09em;
+	text-transform: uppercase;
+}
+
+.gleo-preview-issue {
+	margin-bottom: 8px;
+	padding: 12px 14px;
+	background: rgba(255, 255, 255, 0.04);
+	border: 1px solid transparent;
+	border-radius: 9px;
+	transition: border-color var(--transition-fast);
+}
+
+.gleo-preview-issue.crit {
+	border-color: rgba(239, 68, 68, 0.2);
+}
+
+.gleo-preview-issue.high {
+	border-color: rgba(245, 158, 11, 0.2);
+}
+
+.gleo-preview-issue-title {
+	color: #e2e8f0;
+	font-size: 12.5px;
+	font-weight: 600;
+}
+
+.gleo-preview-issue-msg {
+	margin: 4px 0 0;
+	color: #64748b;
+	font-size: 11.5px;
+	line-height: 1.5;
+}
+
+.gleo-preview-issue-badge {
+	padding: 2px 6px;
+	border-radius: 4px;
+	color: #fff;
+	font-size: 9.5px;
+	font-weight: 700;
+}
+
+.badge-crit {
+	background: #ef4444;
+}
+
+.badge-high {
+	background: #f59e0b;
+}
+
+.gleo-preview-fix-btn {
+	margin-top: 9px;
+	padding: 5px 13px;
+	background: var(--blue);
+	border: none;
+	border-radius: 6px;
+	color: #fff;
+	font-family: inherit;
+	font-size: 11.5px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background var(--transition-fast);
+}
+
+.gleo-preview-fix-btn:hover {
+	background: var(--blue-dark);
+}
+
+.gleo-preview-fixed {
+	margin-top: 6px;
+	color: #4ade80;
+	font-size: 11.5px;
+	font-weight: 600;
+}
+
+.gleo-preview-iframe-wrap {
+	position: relative;
+	flex: 1;
+	background: #fff;
+}
+
+.gleo-preview-loading {
+	position: absolute;
+	inset: 0;
+	z-index: 10;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	background: rgba(12, 17, 32, 0.9);
+}
+
+.gleo-preview-loading p {
+	margin: 0;
+	color: #f1f5f9;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.gleo-spinner {
+	width: 30px;
+	height: 30px;
+	margin-bottom: 14px;
+	border: 2.5px solid rgba(255, 255, 255, 0.1);
+	border-top-color: #818cf8;
+	border-right-color: #818cf8;
+	border-radius: 50%;
+	animation: gleo-spin 0.7s linear infinite;
+}
+
+@keyframes gleo-spin {
+
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* ==========================================================================
+   SVG line chart
+   ========================================================================== */
+.gleo-chart-wrap {
+	margin-top: 14px;
+}
+
+.gleo-line-chart {
+	width: 100%;
+	max-height: 220px;
+	height: auto;
+}
+
+.gleo-chart-legend {
+	display: flex;
+	justify-content: center;
+	gap: 20px;
+	margin-top: 12px;
+}
+
+.gleo-legend-item {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	color: var(--fg-muted);
+	font-size: 11.5px;
+	font-weight: 500;
+}
+
+.gleo-legend-dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+}
+
+.gleo-no-data {
+	padding: 32px 16px;
+	color: var(--fg-muted);
+	font-size: 13px;
+	line-height: 1.6;
+	text-align: center;
+}
+
+/* ==========================================================================
+   Analytics tab
+   ========================================================================== */
+.gleo-analytics-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+	gap: 24px;
+	margin-bottom: 24px;
+}
+
+.gleo-analytics-history-card {
+	margin-bottom: 28px;
+}
+
+.gleo-analytics-post-chart {
+	margin-bottom: 28px;
+	padding-bottom: 22px;
+	border-bottom: 1px solid var(--border-lt);
+}
+
+.gleo-analytics-post-chart:last-child {
+	margin-bottom: 0;
+	padding-bottom: 0;
+	border-bottom: none;
+}
+
+.gleo-analytics-post-chart-title {
+	margin: 0 0 6px;
+	color: var(--fg);
+	font-size: 14px;
+	font-weight: 700;
+}
+
+.gleo-post-history-chart-inline {
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
+.gleo-bot-feed {
+	max-height: 420px;
+	padding: 4px;
+	overflow-y: auto;
+}
+
+.gleo-bot-feed::-webkit-scrollbar {
+	width: 4px;
+}
+
+.gleo-bot-feed::-webkit-scrollbar-thumb {
+	background: var(--border);
+	border-radius: 4px;
+}
+
+.gleo-bot-hit-item {
+	display: flex;
+	gap: 12px;
+	margin-bottom: 12px;
+	padding: 14px 16px;
+	background: rgba(255, 255, 255, 0.8);
+	border: 1px solid rgba(226, 232, 240, 0.8);
+	border-radius: 12px;
+	backdrop-filter: blur(12px);
+	box-shadow: var(--shadow-xs);
+	cursor: pointer;
+	transition: all 0.4s var(--ease-out);
+	animation: gleo-slide-in 0.4s var(--ease-out) forwards;
+}
+
+.gleo-bot-hit-item:hover {
+	background: #fff;
+	border-color: rgba(3, 105, 161, 0.3);
+	box-shadow: var(--shadow-md);
+	transform: translateY(-2px) scale(0.98);
+}
+
+.gleo-bot-icon-wrap {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: 36px;
+	height: 36px;
+	background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+	border: 1px solid #7dd3fc;
+	border-radius: 10px;
+	color: #0369a1;
+	box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.5);
+}
+
+.gleo-bot-details {
+	flex: 1;
+	min-width: 0;
+}
+
+.gleo-bot-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 4px;
+}
+
+.gleo-bot-row strong {
+	color: var(--fg);
+	font-size: 13.5px;
+	font-weight: 700;
+	letter-spacing: -0.2px;
+}
+
+.gleo-bot-time {
+	color: var(--fg-muted);
+	font-size: 11px;
+	font-weight: 500;
+}
+
+.gleo-bot-path {
+	overflow: hidden;
+	color: var(--fg-muted);
+	font-size: 12px;
+	line-height: 1.5;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.gleo-bot-path code {
+	padding: 2px 6px;
+	background: var(--canvas);
+	border: 1px solid var(--border-lt);
+	border-radius: 4px;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+	font-size: 10.5px;
+}
+
+.gleo-no-data-v2 {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-height: 180px;
+	padding: 24px;
+	color: var(--fg-muted);
+	text-align: center;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.gleo-no-data-v2 svg {
+	opacity: 0.3;
+}
+
+.gleo-no-data-v2 p {
+	max-width: 220px;
+	margin-top: 12px;
+	font-size: 13px;
+	line-height: 1.6;
+}
+
+@keyframes gleo-slide-in {
+
+	from {
+		opacity: 0;
+		transform: translateX(10px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateX(0);
+	}
+}
+
+/* ==========================================================================
+   Credentials panel
+   ========================================================================== */
+.gleo-creds-panel {
+	margin-bottom: 16px;
+	padding: 22px;
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow-sm);
+}
+
+.gleo-creds-panel h3 {
+	margin: 0 0 18px;
+	color: var(--fg);
+	font-size: 14px;
+	font-weight: 700;
+	letter-spacing: -0.2px;
+}
+
+.gleo-field {
+	margin-bottom: 16px;
+}
+
+.gleo-field label {
+	display: block;
+	margin-bottom: 6px;
+	color: var(--fg-mid);
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.gleo-input {
+	box-sizing: border-box;
+	width: 100%;
+	padding: 9px 13px;
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	color: var(--fg);
+	font-family: inherit;
+	font-size: 13.5px;
+	transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.gleo-input:focus {
+	outline: none;
+	border-color: var(--blue);
+	box-shadow: 0 0 0 3px rgba(3, 105, 161, 0.15);
+}
+
+/* ==========================================================================
+   Notice / Save status
+   ========================================================================== */
+.gleo-notice {
+	margin-bottom: 14px;
+	padding: 10px 15px;
+	border-radius: var(--radius);
+	font-size: 13px;
+	font-weight: 500;
+}
+
+.gleo-notice.success {
+	background: var(--green-bg);
+	border: 1px solid #a7f3d0;
+	color: #065f46;
+}
+
+.gleo-notice.error {
+	background: var(--red-bg);
+	border: 1px solid #fca5a5;
+	color: #7f1d1d;
+}
+
+/* ==========================================================================
+   Scan-complete modal
+   ========================================================================== */
+.gleo-modal.gleo-scan-modal {
+	width: min(560px, 94vw);
+	max-width: 94vw;
+	padding: 36px 40px 40px !important;
+	box-shadow:
+		0 25px 50px -12px rgba(15, 23, 42, 0.2),
+		0 0 0 1px rgba(15, 23, 42, 0.06);
+}
+
+.gleo-scan-modal-title {
+	margin: 0 0 12px;
+	color: var(--fg);
+	font-size: 22px;
+	font-weight: 800;
+	line-height: 1.25;
+	letter-spacing: -0.4px;
+}
+
+.gleo-scan-modal-lead {
+	max-width: 42em;
+	margin: 0 0 28px;
+	color: var(--fg-mid);
+	font-size: 15px;
+	line-height: 1.6;
+}
+
+.gleo-scan-modal-cta {
+	width: 100%;
+	padding: 16px 20px !important;
+	font-size: 16px !important;
+	font-weight: 700 !important;
+}
+
+.gleo-scan-modal-header {
+	margin-bottom: 16px;
+	padding-bottom: 16px;
+	border-bottom: 1px solid var(--border-lt);
+}
+
+.gleo-scan-modal-header h3 {
+	margin: 0 0 6px;
+	font-size: 17px;
+	font-weight: 700;
+	letter-spacing: -0.3px;
+}
+
+.gleo-scan-modal-header p {
+	margin: 0;
+	color: var(--fg-muted);
+	font-size: 13px;
+	line-height: 1.55;
+}
+
+/* Scan-modal issue rows */
+.gleo-scan-modal .gleo-issue-row {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	padding: 10px 0;
+	border-bottom: 1px solid var(--border-lt);
+}
+
+.gleo-scan-modal .gleo-issue-row:last-child {
+	border-bottom: none;
+}
+
+.gleo-scan-modal .gleo-issue-badge {
+	flex-shrink: 0;
+	margin-top: 1px;
+	padding: 3px 7px;
+	border-radius: 4px;
+	color: #fff;
+	font-size: 10px;
+	font-weight: 700;
+}
+
+.gleo-scan-modal .gleo-issue-badge.critical {
+	background: var(--red);
+}
+
+.gleo-scan-modal .gleo-issue-badge.high {
+	background: var(--amber);
+}
+
+.gleo-issue-area {
+	display: block;
+	color: var(--fg);
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.gleo-issue-msg {
+	margin-top: 1px;
+	color: var(--fg-muted);
+	font-size: 12px;
+	line-height: 1.5;
+}
+
+/* ==========================================================================
+   GEO report header pills
+   ========================================================================== */
+.gleo-issues-header {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 12px;
+}
+
+.gleo-issues-header h4 {
+	margin: 0;
+	color: var(--fg);
+	font-size: 12px;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.gleo-issues-pills {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 5px;
+}
+
+.gleo-issues-pill {
+	padding: 2px 9px;
+	border: 1px solid transparent;
+	border-radius: 100px;
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.03em;
+}
+
+.gleo-issues-pill.critical {
+	background: var(--red-bg);
+	border-color: #fca5a5;
+	color: #991b1b;
+}
+
+.gleo-issues-pill.high {
+	background: var(--amber-bg);
+	border-color: #fde68a;
+	color: #78350f;
+}
+
+.gleo-issues-pill.medium {
+	background: var(--blue-bg);
+	border-color: #bae6fd;
+	color: #075985;
+}
+
+.gleo-issues-pill.positive {
+	background: var(--green-bg);
+	border-color: #a7f3d0;
+	color: #065f46;
+}
+
+/* ==========================================================================
+   GEO report table
+   ========================================================================== */
+.gleo-report-table {
+	overflow: hidden;
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow-xs);
+}
+
+.gleo-report-row {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 14px 18px;
+	border-bottom: 1px solid var(--border-lt);
+	transition: background 0.1s;
+}
+
+.gleo-report-row:last-child {
+	border-bottom: none;
+}
+
+.gleo-report-row:hover {
+	background: var(--canvas);
+}
+
+/* Left accent stripe */
+.gleo-report-row.gleo-issue-critical {
+	padding-left: 15px;
+	border-left: 3px solid var(--red);
+}
+
+.gleo-report-row.gleo-issue-high {
+	padding-left: 15px;
+	border-left: 3px solid var(--amber);
+}
+
+.gleo-report-row.gleo-issue-medium {
+	padding-left: 15px;
+	border-left: 3px solid var(--blue);
+}
+
+.gleo-report-row.gleo-issue-positive {
+	padding-left: 15px;
+	border-left: 3px solid var(--green);
+}
+
+.gleo-report-row-main {
+	flex: 1;
+	min-width: 0;
+}
+
+.gleo-report-row-top {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	margin-bottom: 4px;
+}
+
+.gleo-report-area-name {
+	color: var(--fg);
+	font-size: 13px;
+	font-weight: 600;
+	letter-spacing: -0.1px;
+}
+
+.gleo-report-score-wrap {
+	display: flex;
+	align-items: center;
+	flex-shrink: 0;
+	gap: 10px;
+}
+
+.gleo-report-score-num {
+	min-width: 38px;
+	font-size: 13px;
+	font-weight: 700;
+	text-align: right;
+	letter-spacing: -0.3px;
+	white-space: nowrap;
+}
+
+.gleo-report-score-denom {
+	color: var(--fg-muted);
+	font-size: 11px;
+	font-weight: 500;
+}
+
+.gleo-report-score-bar {
+	flex-shrink: 0;
+	width: 80px;
+	height: 5px;
+	overflow: hidden;
+	background: var(--border-lt);
+	border-radius: 100px;
+}
+
+.gleo-report-row-desc {
+	margin: 0;
+	padding-right: 8px;
+	color: var(--fg-muted);
+	font-size: 12.5px;
+	line-height: 1.5;
+}
+
+.gleo-issue-action {
+	flex-shrink: 0;
+	margin-left: 8px;
+}
+
+.gleo-status-good {
+	color: var(--green);
+	font-size: 12px;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+/* ==========================================================================
+   Legacy flat issue list (kept for backwards compatibility)
+   ========================================================================== */
+.gleo-issues-list {
+	overflow: hidden;
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-lg);
+}
+
+/* stylelint-disable no-descending-specificity */
+.gleo-issue-row {
+	display: flex;
+	align-items: center;
+	gap: 0;
+	padding: 13px 16px;
+	border-bottom: 1px solid var(--border-lt);
+	transition: background 0.1s;
+}
+
+.gleo-issue-row:last-child {
+	border-bottom: none;
+}
+
+.gleo-issue-row:hover {
+	background: var(--canvas);
+}
+/* stylelint-enable no-descending-specificity */
+
+.gleo-issue-critical {
+	padding-left: 13px;
+	border-left: 3px solid var(--red);
+}
+
+.gleo-issue-high {
+	padding-left: 13px;
+	border-left: 3px solid var(--amber);
+}
+
+.gleo-issue-medium {
+	padding-left: 13px;
+	border-left: 3px solid var(--blue);
+}
+
+.gleo-issue-positive {
+	padding-left: 13px;
+	border-left: 3px solid var(--green);
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.gleo-issue-badge {
+	flex-shrink: 0;
+	width: 56px;
+	margin-right: 14px;
+	padding: 2px 8px;
+	border-radius: 4px;
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-align: center;
+	text-transform: uppercase;
+}
+
+.gleo-badge-critical {
+	background: var(--red-bg);
+	color: #991b1b;
+}
+
+.gleo-badge-high {
+	background: var(--amber-bg);
+	color: #78350f;
+}
+
+.gleo-badge-medium {
+	background: var(--blue-bg);
+	color: #075985;
+}
+
+.gleo-badge-positive {
+	background: var(--green-bg);
+	color: #065f46;
+}
+
+.gleo-issue-body {
+	flex: 1;
+	min-width: 0;
+}
+
+.gleo-issue-top {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 2px;
+}
+
+.gleo-issue-area-name {
+	color: var(--fg);
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.gleo-issue-desc {
+	margin: 0;
+	color: var(--fg-muted);
+	font-size: 12.5px;
+	line-height: 1.5;
+}
+
+/* ==========================================================================
+   wp-admin spacing reset
+   ========================================================================== */
+#wpcontent .gleo-dashboard {
+	margin-left: 0 !important;
+}

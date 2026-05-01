@@ -1,0 +1,16 @@
+GLEO ON YOUR PC — 3 STEPS
+=========================
+
+1) Start Local and open your "gleo-test" WordPress site like you normally do.
+
+2) BEFORE you click Analyze in Gleo:
+   Double-click:  Start-Gleo-API.bat
+   A black window opens — leave it open. That is the Gleo brain on port 8765.
+
+3) When we update the plugin in this project folder:
+   Double-click:  Sync-Gleo-Plugin-To-LocalWP.bat
+   Then refresh the Gleo screen in WordPress.
+
+If Analyze still errors, make sure the black API window is open and shows no red errors.
+
+Node.js must be installed once from https://nodejs.org (LTS version is fine).
