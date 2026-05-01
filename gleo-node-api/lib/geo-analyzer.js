@@ -34,17 +34,65 @@ function looksStatInstructionPlaceholder(text = '') {
   return ['add a verified', 'source-backed metric', 'figure and source name', 'verified, source-backed', 'include the figure'].some((n) => t.includes(n));
 }
 
-function sanitizeContextualAssets(assets) {
+function escapeHtmlPlain(s) {
+  return String(s || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/** When Gemini emits banned filler or empty strings, keep other assets instead of dropping the whole bundle. */
+function buildFallbackFaqHtml(title) {
+  const t = escapeHtmlPlain(String(title || 'this topic').slice(0, 160));
+  return (
+    `<h2>Quick answers</h2>` +
+    `<h3>What does this article cover?</h3>` +
+    `<p>It explains ${t} in practical terms—use the headings above to jump to any section.</p>` +
+    `<h3>How should I use this page?</h3>` +
+    `<p>Use it as a reference alongside your own requirements and any rules that apply to you.</p>`
+  );
+}
+
+function contextualAssetFallback(key, title) {
+  const t = escapeHtmlPlain(String(title || '').slice(0, 120));
+  switch (key) {
+    case 'faq_html':
+      return buildFallbackFaqHtml(title);
+    case 'authority_html':
+      return '<p></p>';
+    case 'data_table_html':
+      return '<figure class="wp-block-table"><table class="gleo-ctx-fallback"><tbody><tr><td>Topic</td><td>Details in article</td></tr></tbody></table></figure>';
+    case 'depth_html':
+      return `<h2>More detail on ${t}</h2><p>Expand on the points above with specifics your readers can act on.</p>`;
+    case 'qa_html':
+      return `<p><strong>What is the main idea?</strong></p><p>The article walks through ${t} step by step in the sections above.</p>`;
+    default:
+      return '';
+  }
+}
+
+function sanitizeContextualAssets(assets, title = '') {
   if (!assets || typeof assets !== 'object') return null;
   const keys = ['data_table_html', 'faq_html', 'depth_html', 'qa_html', 'authority_html'];
+  const out = { ...assets };
   for (const key of keys) {
-    if (!assets[key] || typeof assets[key] !== 'string') return null;
-    if (looksGenericCopy(assets[key])) return null;
+    const raw = out[key];
+    const missing = !raw || typeof raw !== 'string' || !String(raw).trim();
+    const generic = !missing && looksGenericCopy(raw);
+    if (missing || generic) {
+      out[key] = contextualAssetFallback(key, title);
+    }
   }
-  if (looksStatInstructionPlaceholder(assets.authority_html)) {
-    assets.authority_html = '<p></p>';
+  for (const key of keys) {
+    if (!out[key] || typeof out[key] !== 'string' || !String(out[key]).trim()) {
+      return null;
+    }
   }
-  return assets;
+  if (looksStatInstructionPlaceholder(out.authority_html)) {
+    out.authority_html = '<p></p>';
+  }
+  return out;
 }
 
 /**
@@ -180,7 +228,7 @@ async function generateContextualAssets(title, content) {
     });
     
     try {
-      return sanitizeContextualAssets(JSON.parse(response.text));
+      return sanitizeContextualAssets(JSON.parse(response.text), title);
     } catch (e) {
       console.error('[GEO] Failed to parse Gemini response:', e.message);
       throw new Error("Gemini parsing failed");

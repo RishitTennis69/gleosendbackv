@@ -2055,20 +2055,58 @@ main :is(.gleo-stats-callout, .gleo-expert-quote, .gleo-table-block, .gleo-faq-w
 					}
 				}
 
-				// Then add FAQ pairs from contextual_assets
+				// Then add FAQ pairs from contextual_assets (H2 section title + H3 Q&A is common; some models use H2 for each question).
 				if ( ! empty( $contextual_assets['faq_html'] ) ) {
-					preg_match_all( '/<h3[^>]*>(.*?)<\/h3>\s*(?:<p[^>]*>(.*?)<\/p>)?/si', $contextual_assets['faq_html'], $fm );
+					$faq_raw = $contextual_assets['faq_html'];
+					$faq_body = $faq_raw;
+					if ( preg_match( '/^<h2[^>]*>.*?<\/h2>\s*/is', $faq_body ) ) {
+						$faq_body = preg_replace( '/^<h2[^>]*>.*?<\/h2>\s*/is', '', $faq_body, 1 );
+					}
+					preg_match_all( '/<h3[^>]*>(.*?)<\/h3>\s*(?:<p[^>]*>(.*?)<\/p>)?/si', $faq_body, $fm );
 					foreach ( $fm[1] as $idx => $q ) {
+						$qt = trim( wp_strip_all_tags( $q ) );
+						if ( '' === $qt ) {
+							continue;
+						}
 						$pairs[] = array(
-							'q' => wp_strip_all_tags( $q ),
-							'a' => ! empty( $fm[2][ $idx ] ) ? wp_strip_all_tags( $fm[2][ $idx ] ) : 'See the article above for details.',
+							'q' => $qt,
+							'a' => ! empty( $fm[2][ $idx ] ) ? wp_strip_all_tags( $fm[2][ $idx ] ) : __( 'See the article above for details.', 'gleo' ),
 						);
+					}
+					if ( empty( $pairs ) ) {
+						preg_match_all( '/<h2[^>]*>(.*?)<\/h2>\s*(?:<p[^>]*>(.*?)<\/p>)?/si', $faq_raw, $f2 );
+						foreach ( $f2[1] as $idx => $q ) {
+							$qt = trim( wp_strip_all_tags( $q ) );
+							if ( '' === $qt || preg_match( '/^(frequently\s+asked|quick\s+answers|common\s+questions)$/i', $qt ) ) {
+								continue;
+							}
+							$pairs[] = array(
+								'q' => $qt,
+								'a' => ! empty( $f2[2][ $idx ] ) ? wp_strip_all_tags( $f2[2][ $idx ] ) : __( 'See the article above for details.', 'gleo' ),
+							);
+						}
 					}
 				}
 
-				// Do not fabricate FAQ entries; require generated FAQ/Q&A content.
+				// Last resort: topic-grounded defaults when scan assets are missing or not parseable (keeps "Add FAQ" from failing silently).
 				if ( empty( $pairs ) ) {
-					return new WP_Error( 'missing_input', 'FAQ content is not available yet. Run optimization first so FAQ entries are generated.', array( 'status' => 400 ) );
+					$topic = wp_strip_all_tags( $post->post_title );
+					if ( '' === $topic ) {
+						$topic = __( 'this topic', 'gleo' );
+					}
+					$pairs   = array();
+					$pairs[] = array(
+						'q' => sprintf(
+							/* translators: %s: post title */
+							__( 'What should I know about %s?', 'gleo' ),
+							$topic
+						),
+						'a' => __( 'The sections above walk through the details—skim the headings to find what matches your question.', 'gleo' ),
+					);
+					$pairs[] = array(
+						'q' => __( 'Where should I start?', 'gleo' ),
+						'a' => __( 'Read the opening, then follow the headings to the part that fits your situation.', 'gleo' ),
+					);
 				}
 
 				// Build accordion HTML

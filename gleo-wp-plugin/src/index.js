@@ -533,12 +533,23 @@ const SitePreview = ( { url, onClose, onApplyAll, applyingAll, allApplied, optim
         )
     ), [ optimizeCritique, geminiPolished ] );
     const [ previewPhase, setPreviewPhase ] = useState( 'live' );
+    /** Without this, the critique effect kept resetting phase to "critique" after the user clicked Continue — the live iframe and AI tour never appeared. */
+    const [ critiqueDismissed, setCritiqueDismissed ] = useState( false );
+    useEffect( () => {
+        if ( optimizeStatus ) {
+            setCritiqueDismissed( false );
+        }
+    }, [ optimizeStatus ] );
     useEffect( () => {
         if ( optimizeStatus ) {
             return;
         }
-        setPreviewPhase( hasCritiqueGate ? 'critique' : 'live' );
-    }, [ optimizeStatus, hasCritiqueGate ] );
+        if ( hasCritiqueGate && ! critiqueDismissed ) {
+            setPreviewPhase( 'critique' );
+        } else {
+            setPreviewPhase( 'live' );
+        }
+    }, [ optimizeStatus, hasCritiqueGate, critiqueDismissed ] );
     const [ iframeKey, setIframeKey ] = useState( Date.now() );
     const [ iframeLoaded, setIframeLoaded ] = useState( false );
     const iframeRef = useRef( null );
@@ -805,7 +816,11 @@ const SitePreview = ( { url, onClose, onApplyAll, applyingAll, allApplied, optim
                         </p>
                     </div>
                 ) : previewPhase === 'critique' ? (
-                    <LayoutCritiquePanel critique={ optimizeCritique } onContinue={ () => setPreviewPhase( 'live' ) } />
+                    <LayoutCritiquePanel critique={ optimizeCritique } onContinue={ () => {
+                        setCritiqueDismissed( true );
+                        setIframeKey( Date.now() );
+                        setIframeLoaded( false );
+                    } } />
                 ) : (
                     <>
                 { ( applyingAll || ( ! iframeLoaded && allApplied ) ) && (
