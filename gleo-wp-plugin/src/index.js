@@ -1326,6 +1326,30 @@ const GeoReportCard = ( { report, totalReportCards = 1 } ) => {
                 <p className="gleo-workflow-hint">Fixes that need your text (like sources) stay one click each in the list below.</p>
             </div>
 
+            { typeof result.gemini_overview === 'string' && result.gemini_overview.trim() ? (
+                <div
+                    className="gleo-gemini-overview"
+                    style={ {
+                        marginBottom: 16,
+                        padding: '14px 18px',
+                        borderRadius: 10,
+                        border: '1px solid #bae6fd',
+                        background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+                        color: '#0c4a6e',
+                        fontSize: 14,
+                        lineHeight: 1.55,
+                    } }
+                >
+                    <strong style={ { display: 'block', fontSize: 11, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#0369a1', marginBottom: 8 } }>
+                        Gemini snapshot — last scan
+                    </strong>
+                    <p style={ { margin: 0, fontWeight: 500 } }>{ result.gemini_overview.trim() }</p>
+                    <span style={ { display: 'block', marginTop: 10, fontSize: 11, color: '#64748b' } }>
+                        Grounded in measured page signals plus Tavily landscape; re-run Analyze after big edits.
+                    </span>
+                </div>
+            ) : null }
+
             { showReportBody && (
                 <div className="gleo-report-body">
                     {(result.json_ld_schema || result.content_signals?.has_schema) && (
