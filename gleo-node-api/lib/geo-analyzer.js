@@ -236,12 +236,12 @@ async function critiquePagePresentation(htmlContent, title, options = {}) {
         {
           role: 'user',
           parts: [{
-            text: `${optimizedNote}You review a WordPress article page for human readability and visual/layout quality as inferred from HTML structure and text.\n\nInput JSON:\n${JSON.stringify(payload)}\n\nCritique ONLY presentation: heading hierarchy and scanability, paragraph length rhythm, list/table usage, sense of balanced sections, repetitive or generic filler, risky contrast if suggested by markup (e.g. light text classes on dark wrappers), broken or uneven columns/layout patterns, and accessibility hints (e.g. missing alt where images exist). Do NOT discuss JSON-LD, meta tags, or GEO scoring. Do NOT invent facts not supported by the excerpt. Be specific to this article.\n\nReturn strict JSON matching the schema.`,
+            text: `${optimizedNote}You review a WordPress article page for human readability and visual/layout quality as inferred from HTML structure and text.\n\nInput JSON:\n${JSON.stringify(payload)}\n\nCritique ONLY presentation: heading hierarchy and scanability, paragraph length rhythm, list/table usage, sense of balanced sections, repetitive or generic filler, risky contrast if suggested by markup (e.g. light text classes on dark wrappers), broken or uneven columns/layout patterns, and accessibility hints (e.g. missing alt where images exist). Do NOT discuss JSON-LD, meta tags, or GEO scoring. Do NOT invent facts not supported by the excerpt. Be specific to this article.\n\nFor EVERY issue you list, you must do two things: (1) observation — what is wrong on THIS page; (2) suggestion — not vague advice ("improve spacing") but concrete HOW TO FIX it: numbered or bulleted steps an editor could follow (e.g. "Change the second H2 to H3", "Merge the two short paragraphs after the table", "Add one blank line between the list and the next heading"). Tie steps to the heading outline or snippet when possible.\n\nReturn strict JSON matching the schema.`,
           }],
         },
       ],
       config: {
-        systemInstruction: 'You are a meticulous editor and UI reviewer for content-heavy sites. Prefer concrete, actionable observations over vague praise. Severity high means it likely hurts comprehension or trust.',
+        systemInstruction: 'You are a meticulous editor and UI reviewer for content-heavy sites. Prefer concrete, actionable observations over vague praise. Every issue must include a suggestion that reads like a mini checklist of fixes (specific HTML/block-level actions), not generic platitudes. Severity high means it likely hurts comprehension or trust.',
         responseMimeType: 'application/json',
         responseSchema: {
           type: 'OBJECT',
@@ -259,8 +259,8 @@ async function critiquePagePresentation(htmlContent, title, options = {}) {
                 properties: {
                   severity: { type: 'STRING', enum: ['low', 'medium', 'high'] },
                   category: { type: 'STRING', description: 'Short label e.g. Hierarchy, Spacing, Typography, Columns' },
-                  observation: { type: 'STRING', description: 'What is wrong, tied to this page.' },
-                  suggestion: { type: 'STRING', description: 'Concrete fix direction (not full HTML).' },
+                  observation: { type: 'STRING', description: 'What is wrong on this page, tied to supplied outline or snippet.' },
+                  suggestion: { type: 'STRING', description: 'How to fix it: numbered or bulleted steps (2–5 items) an editor can apply to WordPress HTML/block markup—specific actions, not phrases like "improve readability" or "consider revising".' },
                 },
                 required: ['severity', 'category', 'observation', 'suggestion'],
               },
@@ -327,9 +327,90 @@ async function generateContextualAssets(title, content) {
 }
 
 /**
+ * Single Gemini pass: holistic GEO score + narrative overview + contextual HTML fragments.
+ * Parser-derived FACTS_JSON is authoritative; the model must not contradict those measurements.
+ */
+async function unifiedGeminiGeoPack({ title, htmlContent, contentSignals, brandInclusionRate, tavilySummary }) {
+  if (!process.env.GOOGLE_GENAI_API_KEY) {
+    return null;
+  }
+  const $ = cheerio.load(htmlContent || '');
+  $('script, style, noscript, svg, path, iframe, nav, footer, header, aside').remove();
+  const plainText = $('body').text().replace(/\s+/g, ' ').substring(0, 3500).trim();
+  const factsJson = JSON.stringify(contentSignals).slice(0, 14000);
+  const tv = String(tavilySummary || '').slice(0, 800);
+
+  const rubric =
+    `You grade a WordPress article for Generative Engine Optimization (GEO).
+
+FACTS_JSON below was measured from the real page HTML — these numbers and booleans are GROUND TRUTH. Your geo_score and overview must agree with FACTS_JSON (do not claim missing items if FACTS_JSON shows they exist; do not invent different word counts or heading counts).
+
+Tavily / AI share-of-voice context (result titles only — use for landscape flavor, NOT to invent on-page facts): ${tv}
+Brand inclusion score (0–10) from that landscape: ${brandInclusionRate}
+
+Output:
+- geo_score: integer 0–100 overall GEO strength for this page.
+- overview: 2–4 plain sentences summarizing strengths and gaps, grounded in FACTS_JSON.
+- contextual_assets_json: one JSON STRING whose parsed value is an object with keys data_table_html, faq_html, depth_html, qa_html, authority_html — minimal HTML fragments grounded in the excerpt (same Gleo rules: no generic benefit matrix tables, no template FAQ blurbs, authority_html empty <p></p> if no numbers in excerpt).
+
+Title: ${title}
+Plain excerpt: ${plainText}`;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: [{ role: 'user', parts: [{ text: `${rubric}\n\nFACTS_JSON:\n${factsJson}` }] }],
+      config: {
+        systemInstruction:
+          'You return strict JSON only. Never contradict FACTS_JSON. Never invent statistics or on-page facts not supported by FACTS_JSON or the plain excerpt.',
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: 'OBJECT',
+          properties: {
+            geo_score: { type: 'NUMBER', description: '0–100 inclusive, consistent with FACTS_JSON.' },
+            overview: { type: 'STRING', description: '2–4 sentences grounded in FACTS_JSON.' },
+            contextual_assets_json: {
+              type: 'STRING',
+              description:
+                'Stringified JSON: {data_table_html, faq_html, depth_html, qa_html, authority_html} — HTML fragment strings only.',
+            },
+          },
+          required: ['geo_score', 'overview', 'contextual_assets_json'],
+        },
+        maxOutputTokens: 8192,
+      },
+    });
+
+    const parsed = JSON.parse(response.text);
+    if (!parsed || typeof parsed.geo_score !== 'number' || typeof parsed.contextual_assets_json !== 'string') {
+      return null;
+    }
+    let assetsRaw;
+    try {
+      assetsRaw = JSON.parse(parsed.contextual_assets_json);
+    } catch (e) {
+      console.error('[GEO] unified pack: contextual_assets_json not valid JSON');
+      return null;
+    }
+    const contextual_assets = sanitizeContextualAssets(assetsRaw, title, plainText);
+    if (!contextual_assets) {
+      return null;
+    }
+    return {
+      geo_score: Math.round(Math.max(0, Math.min(100, parsed.geo_score))),
+      contextual_assets,
+      gemini_overview: typeof parsed.overview === 'string' ? parsed.overview.trim() : '',
+    };
+  } catch (err) {
+    console.error('[GEO] unifiedGeminiGeoPack failed:', err.message);
+    return null;
+  }
+}
+
+/**
  * Analyzes a single post for Generative Engine Optimization (GEO).
- * Uses Tavily to understand how AI engines see the post's topic,
- * then scores the post and generates actionable recommendations based on live HTML.
+ * Uses Tavily for AI share-of-voice / landscape only; HTML parser for facts;
+ * one unified Gemini pass for GEO score + snippets (set GLEO_DISABLE_UNIFIED_GEO=1 to use legacy two-call path).
  *
  * @param {Object} post - { id, title, content (Live HTML) }
  * @param {string} siteUrl - The WordPress site URL for brand detection
@@ -357,41 +438,65 @@ async function analyzePost(post, siteUrl = '') {
     console.error(`  [GEO] Tavily search failed for post ${id}:`, err.message);
   }
 
-  // --- Step 2: Brand Inclusion Rate (0-10) ---
+  // --- Step 2: Brand Inclusion Rate (0-10) from Tavily / SOV ---
   const brandInclusionRate = calculateBrandInclusion(tavilyResults, siteUrl, title);
 
-  // --- Step 3: Content Quality Signals (HTML Parsing) ---
+  // --- Step 3: Content signals from HTML (ground truth for Gemini) ---
   const contentSignals = analyzeContentSignals(content, title);
 
-  // --- Step 4: GEO Score (0-100) ---
-  const geoScore = calculateGeoScore(contentSignals, brandInclusionRate, tavilyResults);
-
-  // --- Step 5: Generate JSON-LD Schema ---
+  // --- Step 4: JSON-LD (deterministic from HTML) ---
   const jsonLdSchema = generateJsonLd(title, content, siteUrl);
-  
-  // --- Step 6: Contextual assets (layout critique runs only after Optimize in the preview flow) ---
-  const contextualAssets = await generateContextualAssets(title, content);
 
-  // --- Step 7: Build Specific Recommendations (Granular Scoring) ---
+  let geoScore = calculateGeoScore(contentSignals, brandInclusionRate, tavilyResults);
+  let contextualAssets = null;
+  let geminiOverview = '';
+
+  const tavilySummary = tavilyResults
+    .slice(0, 5)
+    .map((r) => r.title || r.url || '')
+    .filter(Boolean)
+    .join(' | ');
+
+  if (process.env.GLEO_DISABLE_UNIFIED_GEO !== '1') {
+    const pack = await unifiedGeminiGeoPack({
+      title,
+      htmlContent: content,
+      contentSignals,
+      brandInclusionRate,
+      tavilySummary,
+    });
+    if (pack && pack.contextual_assets) {
+      contextualAssets = pack.contextual_assets;
+      geoScore = pack.geo_score;
+      geminiOverview = pack.gemini_overview || '';
+    }
+  }
+
+  if (!contextualAssets) {
+    contextualAssets = await generateContextualAssets(title, content);
+  }
+
   const recommendations = generateRecommendations(contentSignals, brandInclusionRate, geoScore);
 
-  return {
-    id,
-    data: {
-      title,
-      geo_score: geoScore,
-      brand_inclusion_rate: brandInclusionRate,
-      json_ld_schema: jsonLdSchema,
-      contextual_assets: contextualAssets,
-      recommendations,
-      content_signals: contentSignals,
-      ai_landscape: tavilyResults.slice(0, 3).map(r => ({
-        title: r.title,
-        url: r.url,
-        relevance: r.score ? Math.round(r.score * 100) : null
-      }))
-    }
+  const data = {
+    title,
+    geo_score: geoScore,
+    brand_inclusion_rate: brandInclusionRate,
+    json_ld_schema: jsonLdSchema,
+    contextual_assets: contextualAssets,
+    recommendations,
+    content_signals: contentSignals,
+    ai_landscape: tavilyResults.slice(0, 3).map((r) => ({
+      title: r.title,
+      url: r.url,
+      relevance: r.score ? Math.round(r.score * 100) : null,
+    })),
   };
+  if (geminiOverview) {
+    data.gemini_overview = geminiOverview;
+  }
+
+  return { id, data };
 }
 
 /**

@@ -436,7 +436,7 @@ const LayoutCritiquePanel = ( { critique, onContinue } ) => {
                                 </div>
                                 <p style={ { margin: '0 0 8px', fontSize: 13, lineHeight: 1.5, color: '#cbd5e1' } }>{ iss.observation }</p>
                                 <p style={ { margin: 0, fontSize: 12, lineHeight: 1.5, color: '#93c5fd' } }>
-                                    <strong style={ { fontWeight: 700 } }>Suggestion:</strong> { iss.suggestion }
+                                    <strong style={ { fontWeight: 700 } }>How to fix:</strong> { iss.suggestion }
                                 </p>
                             </div>
                         ) ) }

@@ -14,3 +14,11 @@ GLEO ON YOUR PC — 3 STEPS
 If Analyze still errors, make sure the black API window is open and shows no red errors.
 
 Node.js must be installed once from https://nodejs.org (LTS version is fine).
+
+NODE API — OPTIONAL ENV (gleo-node-api/.env)
+============================================
+After npm install, run once in gleo-node-api:  npx playwright install chromium
+
+- GLEO_DISABLE_UNIFIED_GEO=1  — use legacy scan (separate Gemini call for snippets only).
+- GLEO_VISUAL_POLISH=0        — skip screenshot multimodal polish; text-only polish + critique.
+- GLEO_AUTO_REPAIR_FROM_CRITIQUE=1 — after polish, extra Gemini pass to apply critique fixes (uses more quota).
